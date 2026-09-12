@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { connectDB } from './config/db.js';
 import { initRedis } from './config/redis.js';
 import { initFirebaseAdmin } from './config/firebaseAdmin.js';
@@ -29,10 +30,19 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health Check
 app.get('/api/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState;
+  const dbStatusMap = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+  };
   res.status(200).json({
     status: 'online',
     service: 'ResQ Healthcare Authentication & Clinical Server',
     environment: process.env.NODE_ENV || 'development',
+    database: dbStatusMap[dbStatus] || 'unknown',
+    hasMongoUri: !!process.env.MONGODB_URI,
     timestamp: new Date().toISOString(),
   });
 });

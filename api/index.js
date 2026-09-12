@@ -1,22 +1,24 @@
 import app from '../server/index.js';
+import mongoose from 'mongoose';
 import { connectDB } from '../server/config/db.js';
 import { initFirebaseAdmin } from '../server/config/firebaseAdmin.js';
 import { initMailer } from '../server/config/mailer.js';
 
-let isInitialized = false;
+let servicesInitialized = false;
 
 export default async function handler(req, res) {
-  if (!isInitialized) {
+  if (!servicesInitialized) {
+    initFirebaseAdmin();
+    initMailer();
+    servicesInitialized = true;
+  }
+
+  if (mongoose.connection.readyState !== 1) {
     try {
       await connectDB();
-      initFirebaseAdmin();
-      initMailer();
-      isInitialized = true;
     } catch (err) {
-      console.error('Serverless initialization error:', err);
+      console.error('MongoDB connection error in serverless handler:', err.message);
     }
-  } else {
-    await connectDB();
   }
 
   return app(req, res);

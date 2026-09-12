@@ -57,7 +57,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Bootstrap Database, Cache, and Services
+// Bootstrap Database, Cache, and Services (Persistent environments only)
 const startServer = async () => {
   console.log('🔄 Initializing ResQ Healthcare Backend Services...');
 
@@ -84,6 +84,8 @@ const startServer = async () => {
   });
 };
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
 
 export default app;

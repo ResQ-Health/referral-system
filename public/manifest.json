@@ -1,0 +1,37 @@
+{
+  "short_name": "ResQ",
+  "name": "ResQ Healthcare | Clinician Referral & Diagnostic Portal",
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "type": "image/png",
+      "sizes": "16x16"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "72x72"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
+    },
+    {
+      "src": "/resq-icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/clinician/dashboard/overview/",
+  "background_color": "#06202E",
+  "theme_color": "#06202E",
+  "display": "standalone",
+  "orientation": "portrait"
+}

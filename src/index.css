@@ -1,0 +1,49 @@
+:root {
+  --color-primary: #06202E;
+  --color-primary-hover: #0c3349;
+  --color-secondary: #586A73;
+  --color-border: #E1E3E6;
+  --color-border-focus: #06202E;
+  --color-bg: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-text-main: #06202E;
+  --color-text-muted: #586A73;
+  --color-success: #10B981;
+  --color-error: #EF4444;
+
+  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px 0 rgba(6, 32, 46, 0.08);
+  --shadow-toast: 0 10px 30px -5px rgba(6, 32, 46, 0.12), 0 4px 12px -2px rgba(6, 32, 46, 0.06);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

@@ -1653,6 +1653,10 @@
   display: none;
 }
 
+.mobile-header-brand-wrap {
+  display: none;
+}
+
 /* Referrals Table Card */
 .referrals-table-card {
   background-color: #FFFFFF;
@@ -8875,35 +8879,72 @@
 
 /* 4. Mobile Phones & Bottom Sheet Modals (<= 640px) */
 @media (max-width: 640px) {
-  /* Modal Overlay as Mobile Bottom Sheet */
+  /* Full-Screen Scrollable Page on Mobile for Referral Creation (Replaces Trapped Modals) */
   .modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    background-color: #F8FAFC !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     padding: 0 !important;
-    align-items: flex-end !important;
-    justify-content: center !important;
+    margin: 0 !important;
+    display: block !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    z-index: 99999 !important;
   }
 
-  .modal-card-resq {
+  .modal-card-resq,
+  .modal-card-type,
+  .modal-card-drafts,
+  .referral-type-modal-card {
     width: 100% !important;
+    min-width: 100% !important;
     max-width: 100% !important;
-    border-radius: 20px 20px 0 0 !important;
-    padding: 20px 16px 36px !important;
-    max-height: 94vh !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    border-radius: 0 !important;
+    padding: 14px 14px 120px !important;
     margin: 0 !important;
-    box-shadow: 0 -8px 30px rgba(6, 32, 46, 0.25) !important;
+    box-shadow: none !important;
+    border: none !important;
+    background-color: #F8FAFC !important;
+    overflow: visible !important;
+  }
+
+  /* Sticky Top Bar on Mobile for Referral Flow */
+  .resq-modal-header-redesigned {
+    position: sticky;
+    top: 0;
+    background: #FFFFFF;
+    margin: -14px -14px 14px -14px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #E2E8F0;
+    z-index: 30;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   }
 
   .modal-header-top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 8px;
+    width: 100%;
   }
 
   .modal-nav-back-pill {
-    padding: 5px 10px;
+    padding: 6px 10px;
     font-size: 11.5px;
     gap: 4px;
+    border-radius: 8px;
   }
 
   .modal-step-badge-indicator {
     padding: 3px 8px;
+    border-radius: 16px;
   }
 
   .step-pct-pill {
@@ -8911,12 +8952,54 @@
   }
 
   .modal-headline-title {
-    font-size: 18px;
+    font-size: 17px;
+    font-weight: 800;
   }
 
   .modal-headline-subtitle {
-    font-size: 12.5px;
-    line-height: 1.45;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  /* Brand Name Text alongside Logo on Mobile */
+  .sidebar-brand-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .resq-brand-text-lg {
+    font-size: 20px;
+    font-weight: 800;
+    color: #06202E;
+    letter-spacing: -0.4px;
+  }
+
+  .mobile-header-brand-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mobile-header-logo {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+  }
+
+  .mobile-header-brand-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #06202E;
+    letter-spacing: -0.3px;
+  }
+
+  .resq-logo-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: #06202E;
+    margin-left: 6px;
+    letter-spacing: -0.3px;
   }
 
   /* Stepper on Mobile */

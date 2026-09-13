@@ -540,6 +540,14 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   });
 
   const [patientWorkflowType, setPatientWorkflowType] = useState<'existing' | 'new'>('new');
+  const [newUserForm, setNewUserForm] = useState({
+    fullName: '',
+    gender: '',
+    dob: '',
+    email: '',
+    phone: '',
+    address: '',
+  });
   const [isExistingAccordionOpen, setIsExistingAccordionOpen] = useState(true);
   const [isNewUserAccordionOpen, setIsNewUserAccordionOpen] = useState(false);
   const [existingPatientFound, setExistingPatientFound] = useState(false);
@@ -934,6 +942,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   // 1. Choose Referral Type from Blurry Modal
   const handleSelectType = (type: 'existing' | 'new') => {
     setPatientWorkflowType(type);
+    setExistingPatientFound(false);
+    setNewUserForm({
+      fullName: '',
+      gender: 'Male',
+      dob: '',
+      email: '',
+      phone: '',
+      address: '',
+    });
     if (type === 'existing') {
       setFormData({
         fullName: '',
@@ -975,6 +992,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   const handleSelectExistingPatient = (patient: ExistingPatient) => {
     setPatientWorkflowType('existing');
     setSelectedPatientId(patient.id);
+    setExistingPatientFound(true);
     setFormData({
       fullName: patient.name,
       gender: patient.gender,
@@ -986,6 +1004,14 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       bodyPart: '',
       contrastOption: 'Not Specified',
       clinicalNote: '',
+    });
+    setNewUserForm({
+      fullName: '',
+      gender: 'Male',
+      dob: '',
+      email: '',
+      phone: '',
+      address: '',
     });
     // Smoothly advance to Patient Information (Page 1 of 2) pre-filled for doctor review
     setModalStep('patient-info');
@@ -1001,7 +1027,19 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   // 3. Save Draft (creates new or updates existing draft)
   const handleSaveDraft = () => {
     const draftId = activeDraftId || `DRAFT-${Date.now()}`;
-    const pName = formData.fullName.trim();
+    const effectiveFormData =
+      patientWorkflowType === 'new' && !existingPatientFound
+        ? {
+            ...formData,
+            fullName: newUserForm.fullName,
+            gender: newUserForm.gender || 'Male',
+            dob: newUserForm.dob,
+            email: newUserForm.email,
+            phone: newUserForm.phone,
+            address: newUserForm.address,
+          }
+        : { ...formData };
+    const pName = effectiveFormData.fullName.trim();
     const newDraft: ReferralDraft = {
       id: draftId,
       savedAt: new Date().toISOString(),
@@ -1009,7 +1047,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       step: modalStep === 'scan-details' ? 'scan-details' : 'patient-info',
       workflowType: patientWorkflowType,
       selectedPatientId,
-      formData: { ...formData },
+      formData: effectiveFormData,
       uploadedFileName: uploadedFile?.name,
       existingUserLookupEmail,
     };
@@ -1047,6 +1085,16 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   const handleResumeDraft = (draft: ReferralDraft) => {
     setActiveDraftId(draft.id);
     setFormData({ contrastOption: 'Not Specified', ...draft.formData });
+    if (draft.workflowType === 'new') {
+      setNewUserForm({
+        fullName: draft.formData.fullName || '',
+        gender: draft.formData.gender || 'Male',
+        dob: draft.formData.dob || '',
+        email: draft.formData.email || '',
+        phone: draft.formData.phone || '',
+        address: draft.formData.address || '',
+      });
+    }
     setPatientWorkflowType(draft.workflowType);
     setSelectedPatientId(draft.selectedPatientId || null);
     if (draft.existingUserLookupEmail) {
@@ -1356,7 +1404,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       {/* Left Sidebar (Desktop Persistent & Mobile Slide-Over Drawer) */}
       <aside className={`clinician-sidebar ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-brand">
-          <img src="/logo.png" alt="RESQ" className="resq-sidebar-logo" />
+          <div className="sidebar-brand-group">
+            <img src="/logo.png" alt="RESQ" className="resq-sidebar-logo" />
+            <span className="resq-brand-text-lg">ResQ</span>
+          </div>
           <button
             type="button"
             className="mobile-sidebar-close-btn"
@@ -1465,6 +1516,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             >
               <Menu size={22} />
             </button>
+            <div className="mobile-header-brand-wrap">
+              <img src="/logo.png" alt="ResQ" className="mobile-header-logo" />
+              <span className="mobile-header-brand-title">ResQ</span>
+            </div>
             <h1 className="header-page-title">
               {activeTab === 'referrals' ? 'Referral Lists' : 'Overview'}
             </h1>
@@ -2759,6 +2814,17 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                if (patientWorkflowType === 'new' && !existingPatientFound) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    fullName: newUserForm.fullName.trim(),
+                    gender: newUserForm.gender || 'Male',
+                    dob: newUserForm.dob.trim(),
+                    email: newUserForm.email.trim(),
+                    phone: newUserForm.phone.trim(),
+                    address: newUserForm.address.trim(),
+                  }));
+                }
                 setModalStep('scan-details');
               }}
             >
@@ -3069,10 +3135,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                           <input
                             type="text"
                             placeholder="Enter Full Name"
-                            value={existingPatientFound ? '' : formData.fullName}
+                            value={newUserForm.fullName}
                             onChange={(e) => {
                               if (existingPatientFound) setExistingPatientFound(false);
-                              setFormData({ ...formData, fullName: e.target.value });
+                              setNewUserForm((prev) => ({ ...prev, fullName: e.target.value }));
                             }}
                             className="resq-input-boxed"
                             required={isNewUserAccordionOpen && !existingPatientFound}
@@ -3087,10 +3153,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                             </label>
                             <div className="resq-input-wrapper">
                               <select
-                                value={existingPatientFound ? '' : formData.gender}
+                                value={newUserForm.gender}
                                 onChange={(e) => {
                                   if (existingPatientFound) setExistingPatientFound(false);
-                                  setFormData({ ...formData, gender: e.target.value });
+                                  setNewUserForm((prev) => ({ ...prev, gender: e.target.value }));
                                 }}
                                 className="resq-select-boxed"
                               >
@@ -3111,10 +3177,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                               <input
                                 type="text"
                                 placeholder="00/00/0000"
-                                value={existingPatientFound ? '' : formData.dob}
+                                value={newUserForm.dob}
                                 onChange={(e) => {
                                   if (existingPatientFound) setExistingPatientFound(false);
-                                  setFormData({ ...formData, dob: e.target.value });
+                                  setNewUserForm((prev) => ({ ...prev, dob: e.target.value }));
                                 }}
                                 className="resq-input-boxed"
                               />
@@ -3132,10 +3198,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                             <input
                               type="email"
                               placeholder="e.g. newpatient@mail.com"
-                              value={existingPatientFound ? '' : formData.email}
+                              value={newUserForm.email}
                               onChange={(e) => {
                                 if (existingPatientFound) setExistingPatientFound(false);
-                                setFormData({ ...formData, email: e.target.value });
+                                setNewUserForm((prev) => ({ ...prev, email: e.target.value }));
                               }}
                               className="resq-input-boxed"
                             />
@@ -3148,8 +3214,11 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                             <input
                               type="tel"
                               placeholder="0801 234 5678"
-                              value={formData.phone}
-                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                              value={newUserForm.phone}
+                              onChange={(e) => {
+                                if (existingPatientFound) setExistingPatientFound(false);
+                                setNewUserForm((prev) => ({ ...prev, phone: e.target.value }));
+                              }}
                               className="resq-input-boxed"
                             />
                           </div>
@@ -3164,12 +3233,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                             <textarea
                               maxLength={240}
                               placeholder="Input text field here (optional)"
-                              value={formData.address}
-                              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                              value={newUserForm.address}
+                              onChange={(e) => {
+                                if (existingPatientFound) setExistingPatientFound(false);
+                                setNewUserForm((prev) => ({ ...prev, address: e.target.value }));
+                              }}
                               className="new-user-textarea"
                             />
                             <span className="new-user-char-count">
-                              {formData.address.length}/240
+                              {newUserForm.address.length}/240
                             </span>
                           </div>
                         </div>
@@ -3215,7 +3287,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     <button
                       type="submit"
                       className="btn-resq-proceed"
-                      disabled={!formData.fullName.trim()}
+                      disabled={existingPatientFound ? !formData.fullName.trim() : !newUserForm.fullName.trim()}
                     >
                       <span>Next: Scan Details</span>
                       <ArrowRight size={15} />

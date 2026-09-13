@@ -16,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({ currentScreen, onNavigate }) => 
           aria-label="ResQ Home"
         >
           <img src="/logo.png" alt="RESQ" className="resq-logo" />
+          <span className="resq-logo-name">ResQ</span>
         </button>
       </div>
 

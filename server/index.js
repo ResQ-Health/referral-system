@@ -2,6 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import dns from 'dns';
+import crypto from 'node:crypto';
+
+// Polyfill globalThis.crypto for Node 18 MongoDB driver compatibility
+if (!globalThis.crypto) {
+  globalThis.crypto = crypto;
+}
 import { connectDB } from './config/db.js';
 import { initRedis } from './config/redis.js';
 import { initFirebaseAdmin } from './config/firebaseAdmin.js';

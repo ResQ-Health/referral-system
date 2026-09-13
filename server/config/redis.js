@@ -9,30 +9,40 @@ export const initRedis = () => {
   const redisPassword = process.env.REDIS_PASSWORD;
 
   try {
+    const retryStrategy = (times) => {
+      if (times > 3) return null; // Stop retrying after 3 attempts
+      return Math.min(times * 500, 2000);
+    };
+
     if (redisUrl) {
       redisClient = new Redis(redisUrl, {
-        maxRetriesPerRequest: 3,
-        retryStrategy(times) {
-          if (times > 5) return null;
-          return Math.min(times * 300, 2000);
-        },
+        maxRetriesPerRequest: 1,
+        retryStrategy,
+        enableOfflineQueue: false,
       });
     } else if (redisHost) {
       redisClient = new Redis({
         host: redisHost,
         port: Number(redisPort),
         password: redisPassword,
-        maxRetriesPerRequest: 3,
+        maxRetriesPerRequest: 1,
+        retryStrategy,
+        enableOfflineQueue: false,
       });
     }
 
     if (redisClient) {
+      let loggedError = false;
       redisClient.on('connect', () => {
         console.log('✓ Redis Cloud Connected');
+        loggedError = false;
       });
 
       redisClient.on('error', (err) => {
-        console.warn(`⚠️ Redis notice: ${err.message}`);
+        if (!loggedError) {
+          console.warn(`ℹ️ Redis notice: ${err.message} (Caching will be bypassed gracefully)`);
+          loggedError = true;
+        }
       });
     }
   } catch (error) {

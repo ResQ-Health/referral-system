@@ -20,7 +20,11 @@ export const connectDB = async () => {
     console.log(`✓ MongoDB Connected: ${cachedConnection.connection.host} (${cachedConnection.connection.name})`);
     return cachedConnection;
   } catch (error) {
-    console.error(`✗ MongoDB Connection Error: ${error.message}`);
+    if (error.message.includes('querySrv ECONNREFUSED')) {
+      console.warn(`ℹ️ MongoDB SRV DNS Notice: Unable to resolve ${uri.split('@')[1] || 'cluster'} over local SRV DNS query. Verify network internet access or use standard connection string format.`);
+    } else {
+      console.warn(`⚠️ MongoDB Connection Notice: ${error.message}`);
+    }
     return null;
   }
 };

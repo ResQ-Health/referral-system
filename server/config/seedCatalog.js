@@ -90,6 +90,12 @@ export const DEFAULT_BODY_PARTS = [
 
 export const seedClinicalCatalog = async () => {
   try {
+    const mongoose = (await import('mongoose')).default;
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+      console.log('ℹ️ Skipping clinical catalog seeding (MongoDB not connected)');
+      return null;
+    }
+
     console.log('🔄 Checking clinical catalog in MongoDB...');
 
     // 1. Seed Scan Types (Bulk upsert without duplicates)

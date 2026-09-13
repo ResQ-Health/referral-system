@@ -22,6 +22,12 @@ import {
   Moon,
   AlertCircle,
   Eye,
+  Stethoscope,
+  Building2,
+  Mail,
+  Phone,
+  Copy,
+  CheckCheck,
 } from 'lucide-react';
 import { RequisitionDocumentModal } from './RequisitionDocumentModal';
 
@@ -293,6 +299,17 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
     ? doctorDisplayName.substring(3).trim()
     : doctorDisplayName
   ).charAt(0).toUpperCase() || 'E';
+  const doctorEmail = user.email || 'dr.kelvin@resqhealth.com';
+  const doctorPhone = user.phoneNumber || '+234 802 345 6789';
+  const [copiedLicense, setCopiedLicense] = useState(false);
+
+  const handleCopyLicense = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(doctorLicense);
+    }
+    setCopiedLicense(true);
+    setTimeout(() => setCopiedLicense(false), 2000);
+  };
 
   const isSameDay = (d1: Date, d2: Date) =>
     d1.getFullYear() === d2.getFullYear() &&
@@ -770,57 +787,145 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
             </div>
           </div>
 
-          {/* 3. Ordering Clinician & Attached Requisition Document Card */}
-          <div className="referral-summary-card-executive">
+          {/* 3. Ordering Clinician & Attached Requisition Document Card (Executive Redesign) */}
+          <div className="referral-summary-card-executive clinician-auth-card-wrapper">
+            {/* Card Header */}
             <div className="referral-card-section-header">
               <div className="section-header-title-group">
-                <div className="section-icon-badge">
-                  <ShieldCheck size={16} />
+                <div className="section-icon-badge badge-teal-gradient">
+                  <ShieldCheck size={18} />
                 </div>
                 <div>
                   <h3 className="referral-card-section-label">Referring Clinician Authorization</h3>
-                  <p className="referral-card-section-desc">Digitally signed clinical requisition order and practitioner authorization.</p>
+                  <p className="referral-card-section-desc">
+                    Official clinical practitioner authorization, verified medical credentials, and digital attestation.
+                  </p>
                 </div>
               </div>
-              <span className="summary-status-pill" style={{ margin: 0 }}>
+              <span className="summary-status-pill pill-active-verified" style={{ margin: 0 }}>
                 <CheckCircle2 size={13} className="text-emerald" />
-                <span>MDCN Verified</span>
+                <span>MDCN Licensed & Verified</span>
               </span>
             </div>
 
-            <div className="referral-clinician-dual-block">
-              <div className="referral-clinician-detail-box">
-                <div className="clinician-avatar-badge-large">
-                  {doctorInitial}
-                </div>
-                <div className="clinician-detail-text">
-                  <span className="clinician-full-name">{doctorName}</span>
-                  <span className="clinician-license-num">License: {doctorLicense} • {doctorSpecialty}</span>
-                  <span className="clinician-verified-tag">
+            {/* Clinician Accreditation & Details Panel */}
+            <div className="clinician-auth-credentials-panel">
+              <div className="clinician-auth-profile-left">
+                <div className="clinician-auth-avatar-wrap">
+                  <div className="clinician-avatar-badge-large">
+                    {doctorInitial}
+                  </div>
+                  <span className="auth-avatar-status-badge" title="Active MDCN Registration">
                     <CheckCircle2 size={12} />
-                    Verified RESQ Clinician #44910
                   </span>
+                </div>
+
+                <div className="clinician-auth-identity">
+                  <div className="clinician-auth-name-row">
+                    <h4 className="clinician-full-name">{doctorName}</h4>
+                    <span className="clinician-cadre-tag">Registered Medical Practitioner</span>
+                  </div>
+
+                  <div className="clinician-meta-chips-row">
+                    <span className="clinician-specialty-pill">
+                      <Stethoscope size={13} />
+                      {doctorSpecialty}
+                    </span>
+                    <span className="clinician-facility-pill">
+                      <Building2 size={13} />
+                      {doctorFacility}
+                    </span>
+                  </div>
+
+                  <div className="clinician-contact-sub-row">
+                    <span className="clinician-contact-item">
+                      <Mail size={12} />
+                      {doctorEmail}
+                    </span>
+                    <span className="clinician-contact-item">
+                      <Phone size={12} />
+                      {doctorPhone}
+                    </span>
+                  </div>
                 </div>
               </div>
 
+              {/* Regulatory / MDCN License Card */}
+              <div className="clinician-auth-license-box">
+                <span className="auth-license-header-label">REGULATORY ACCREDITATION</span>
+                <div className="auth-license-body">
+                  <div className="auth-license-code-wrap">
+                    <span className="auth-license-number font-mono">{doctorLicense}</span>
+                    <button
+                      type="button"
+                      className="btn-copy-license-sm"
+                      onClick={handleCopyLicense}
+                      title="Copy MDCN License Number"
+                    >
+                      {copiedLicense ? <CheckCheck size={12} className="text-emerald" /> : <Copy size={12} />}
+                      <span>{copiedLicense ? 'Copied' : 'Copy'}</span>
+                    </button>
+                    <span className="auth-badge-verified">ACTIVE</span>
+                  </div>
+                  <span className="auth-license-board">Medical and Dental Council of Nigeria (MDCN)</span>
+                  <span className="auth-license-prescribing">Full Specialist Prescribing & Referral Authority</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Legal Attestation & Electronic Seal Box */}
+            <div className="clinician-attestation-block">
+              <div className="attestation-text-side">
+                <span className="attestation-statement-label">CLINICAL ATTESTATION & LEGAL DISCLOSURE</span>
+                <p className="attestation-statement-quote">
+                  “I, {doctorName}, certify under professional standards that I am a registered medical practitioner. The requested examination is medically justified by clinical evaluation, and appropriate radiation and contrast safety parameters have been evaluated.”
+                </p>
+              </div>
+
+              <div className="attestation-signature-side">
+                <div className="attestation-signature-stamp">
+                  <span className="signature-doctor-handwriting">{doctorName}</span>
+                  <div className="signature-meta-row">
+                    <span className="signature-timestamp">Digitally Signed on ResQ</span>
+                    <span className="signature-security-hash">AUTH: {doctorLicense.replace(/[^a-zA-Z0-9]/g, '')}-SEC</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Attached Document & Safety Verification Row */}
+            <div className="clinician-auth-footer-row">
               <div
                 className="review-document-pill-executive interactive-doc-pill"
                 onClick={() => setIsRequisitionModalOpen(true)}
                 title="Click to view and preview Clinical_Requisition_Order.pdf"
               >
                 <div className="doc-pill-left">
-                  <FileText size={18} className="review-doc-icon" />
+                  <div className="doc-pdf-icon-wrap">
+                    <FileText size={18} />
+                  </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span className="review-doc-name">Clinical_Requisition_Order.pdf</span>
-                    <span style={{ fontSize: '11.5px', color: '#64748B' }}>1.2 MB • Digitally Signed Requisition</span>
+                    <span style={{ fontSize: '11.5px', color: '#64748B' }}>1.2 MB • Digitally Signed & Sealed Requisition</span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="doc-verified-badge">Attached</span>
+                  <span className="doc-verified-badge">Bound to Referral</span>
                   <span className="btn-preview-doc-chip">
-                    <Eye size={12} />
+                    <Eye size={13} />
                     <span>View Requisition</span>
                   </span>
+                </div>
+              </div>
+
+              <div className="clinician-safety-checks-strip">
+                <div className="safety-check-item">
+                  <CheckCircle2 size={13} className="text-emerald" />
+                  <span>MDCN Practitioner Registration Validated</span>
+                </div>
+                <div className="safety-check-item">
+                  <CheckCircle2 size={13} className="text-emerald" />
+                  <span>Electronic PACS Dispatch Authorized</span>
                 </div>
               </div>
             </div>

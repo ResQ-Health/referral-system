@@ -9,7 +9,13 @@ import {
   Edit3,
   Store,
   Eye,
-  UserCheck,
+  ShieldCheck,
+  Stethoscope,
+  Building2,
+  Mail,
+  Phone,
+  Copy,
+  CheckCheck,
 } from 'lucide-react';
 import { SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
 import { SearchableSelect } from './SearchableSelect';
@@ -71,10 +77,21 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
   const clinicianSpecialty = user?.specialty?.trim() || 'Consultant Specialist';
   const clinicianLicense = user?.licenseNumber?.trim() || 'MDCN-REG-847291';
   const clinicianFacility = user?.practiceName?.trim() || 'ResQ Medical Center';
+  const clinicianEmail = user?.email || 'dr.kelvin@resqhealth.com';
+  const clinicianPhone = user?.phoneNumber || '+234 802 345 6789';
   const doctorInitial = (rawDoctorName.toLowerCase().startsWith('dr.')
     ? rawDoctorName.substring(3).trim()
     : rawDoctorName
   ).charAt(0).toUpperCase() || 'E';
+  const [copiedLicense, setCopiedLicense] = useState(false);
+
+  const handleCopyLicense = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(clinicianLicense);
+    }
+    setCopiedLicense(true);
+    setTimeout(() => setCopiedLicense(false), 2000);
+  };
 
   const scanType = formData.scanType || 'MRI';
   const bodyPart = formData.bodyPart || 'Brain MRI';
@@ -85,8 +102,8 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
   const [isPreviewDocOpen, setIsPreviewDocOpen] = useState(false);
 
   return (
-    <div className="referral-review-layout">
-      {/* Redesigned Executive Top Header */}
+    <div className="referral-review-fullpage">
+      {/* Redesigned Executive Top Header - Stretches 100% full width to the ends of the page */}
       <header className="marketplace-navbar">
         <div className="marketplace-nav-left">
           <button
@@ -147,7 +164,7 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
         </div>
       </header>
 
-      <div className="referral-page-summary-wrapper" style={{ maxWidth: '860px', margin: '24px auto' }}>
+      <div className="referral-page-summary-wrapper">
         {/* Executive Header Banner */}
         <div className="referral-summary-header-banner">
           <div className="summary-banner-top-row">
@@ -264,67 +281,146 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
         </div>
       </div>
 
-      {/* 2. ORDERING CLINICIAN SECTION */}
-      <div className="referral-summary-card-executive">
+      {/* 2. ORDERING CLINICIAN & REFERRING AUTHORIZATION SECTION (Executive Redesign) */}
+      <div className="referral-summary-card-executive clinician-auth-card-wrapper">
+        {/* Card Header */}
         <div className="referral-card-section-header">
           <div className="section-header-title-group">
-            <div className="section-icon-badge">
-              <UserCheck size={16} />
+            <div className="section-icon-badge badge-teal-gradient">
+              <ShieldCheck size={18} />
             </div>
             <div>
-              <h3 className="referral-card-section-label">Ordering Clinician & Facility</h3>
-              <p className="referral-card-section-desc">Authenticated physician details on file for medical requisition authorization.</p>
+              <h3 className="referral-card-section-label">Referring Clinician Authorization</h3>
+              <p className="referral-card-section-desc">
+                Official clinical practitioner authorization, verified medical credentials, and digital attestation.
+              </p>
             </div>
           </div>
-          <span className="summary-status-pill" style={{ margin: 0 }}>
+          <span className="summary-status-pill pill-active-verified" style={{ margin: 0 }}>
             <CheckCircle2 size={13} className="text-emerald" />
-            <span>MDCN Authorized</span>
+            <span>MDCN Licensed & Verified</span>
           </span>
         </div>
 
-        <div className="referral-card-inputs-grid">
-          <div className="referral-input-unit">
-            <label className="referral-unit-label">Doctor Name</label>
-            <input
-              type="text"
-              readOnly
-              value={clinicianName}
-              className="referral-unit-input"
-              style={{ backgroundColor: '#F8FAFC', fontWeight: 600, color: '#06202E' }}
-            />
+        {/* Clinician Accreditation & Details Panel */}
+        <div className="clinician-auth-credentials-panel">
+          <div className="clinician-auth-profile-left">
+            <div className="clinician-auth-avatar-wrap">
+              <div className="clinician-avatar-badge-large">
+                {doctorInitial}
+              </div>
+              <span className="auth-avatar-status-badge" title="Active MDCN Registration">
+                <CheckCircle2 size={12} />
+              </span>
+            </div>
+
+            <div className="clinician-auth-identity">
+              <div className="clinician-auth-name-row">
+                <h4 className="clinician-full-name">{clinicianName}</h4>
+                <span className="clinician-cadre-tag">Registered Medical Practitioner</span>
+              </div>
+
+              <div className="clinician-meta-chips-row">
+                <span className="clinician-specialty-pill">
+                  <Stethoscope size={13} />
+                  {clinicianSpecialty}
+                </span>
+                <span className="clinician-facility-pill">
+                  <Building2 size={13} />
+                  {clinicianFacility}
+                </span>
+              </div>
+
+              <div className="clinician-contact-sub-row">
+                <span className="clinician-contact-item">
+                  <Mail size={12} />
+                  {clinicianEmail}
+                </span>
+                <span className="clinician-contact-item">
+                  <Phone size={12} />
+                  {clinicianPhone}
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="referral-input-unit">
-            <label className="referral-unit-label">Clinical Specialty</label>
-            <input
-              type="text"
-              readOnly
-              value={clinicianSpecialty}
-              className="referral-unit-input"
-              style={{ backgroundColor: '#F8FAFC', color: '#334155' }}
-            />
+          {/* Regulatory / MDCN License Card */}
+          <div className="clinician-auth-license-box">
+            <span className="auth-license-header-label">REGULATORY ACCREDITATION</span>
+            <div className="auth-license-body">
+              <div className="auth-license-code-wrap">
+                <span className="auth-license-number font-mono">{clinicianLicense}</span>
+                <button
+                  type="button"
+                  className="btn-copy-license-sm"
+                  onClick={handleCopyLicense}
+                  title="Copy MDCN License Number"
+                >
+                  {copiedLicense ? <CheckCheck size={12} className="text-emerald" /> : <Copy size={12} />}
+                  <span>{copiedLicense ? 'Copied' : 'Copy'}</span>
+                </button>
+                <span className="auth-badge-verified">ACTIVE</span>
+              </div>
+              <span className="auth-license-board">Medical and Dental Council of Nigeria (MDCN)</span>
+              <span className="auth-license-prescribing">Full Specialist Prescribing & Referral Authority</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Legal Attestation & Electronic Seal Box */}
+        <div className="clinician-attestation-block">
+          <div className="attestation-text-side">
+            <span className="attestation-statement-label">CLINICAL ATTESTATION & LEGAL DISCLOSURE</span>
+            <p className="attestation-statement-quote">
+              “I, {clinicianName}, certify under professional standards that I am a registered medical practitioner. The requested examination is medically justified by clinical evaluation, and appropriate radiation and contrast safety parameters have been evaluated.”
+            </p>
           </div>
 
-          <div className="referral-input-unit">
-            <label className="referral-unit-label">MDCN License Number</label>
-            <input
-              type="text"
-              readOnly
-              value={clinicianLicense}
-              className="referral-unit-input font-mono"
-              style={{ backgroundColor: '#F8FAFC', color: '#334155' }}
-            />
+          <div className="attestation-signature-side">
+            <div className="attestation-signature-stamp">
+              <span className="signature-doctor-handwriting">{clinicianName}</span>
+              <div className="signature-meta-row">
+                <span className="signature-timestamp">Digitally Signed on ResQ</span>
+                <span className="signature-security-hash">AUTH: {clinicianLicense.replace(/[^a-zA-Z0-9]/g, '')}-SEC</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Attached Document & Safety Verification Row */}
+        <div className="clinician-auth-footer-row">
+          <div
+            className="review-document-pill-executive interactive-doc-pill"
+            onClick={() => setIsPreviewDocOpen(true)}
+            title="Click to view and preview Clinical_Requisition_Order.pdf"
+          >
+            <div className="doc-pill-left">
+              <div className="doc-pdf-icon-wrap">
+                <FileText size={18} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span className="review-doc-name">{documentName}</span>
+                <span style={{ fontSize: '11.5px', color: '#64748B' }}>1.2 MB • Digitally Signed & Sealed Requisition</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="doc-verified-badge">Bound to Referral</span>
+              <span className="btn-preview-doc-chip">
+                <Eye size={13} />
+                <span>View Requisition</span>
+              </span>
+            </div>
           </div>
 
-          <div className="referral-input-unit">
-            <label className="referral-unit-label">Referring Medical Facility</label>
-            <input
-              type="text"
-              readOnly
-              value={clinicianFacility}
-              className="referral-unit-input"
-              style={{ backgroundColor: '#F8FAFC', color: '#334155' }}
-            />
+          <div className="clinician-safety-checks-strip">
+            <div className="safety-check-item">
+              <CheckCircle2 size={13} className="text-emerald" />
+              <span>MDCN Practitioner Registration Validated</span>
+            </div>
+            <div className="safety-check-item">
+              <CheckCircle2 size={13} className="text-emerald" />
+              <span>Electronic PACS Dispatch Authorized</span>
+            </div>
           </div>
         </div>
       </div>

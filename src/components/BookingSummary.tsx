@@ -3,6 +3,8 @@ import {
   ArrowLeft,
   AlertTriangle,
   Star,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import type { Facility } from './FacilityMarketplace';
 import { SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
@@ -13,6 +15,9 @@ interface BookingSummaryProps {
     fullname?: string;
     email?: string;
     specialty?: string;
+    licenseNumber?: string;
+    practiceName?: string;
+    phoneNumber?: string;
   };
   facility: Facility;
   slot: {
@@ -181,16 +186,27 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
         {/* Right Column: Clinician, Scan Details (UNLOCKED), and Submit */}
         <div className="booking-right-col">
           {/* Card 1: Referring Clinician */}
-          <div className="booking-card">
-            <h4 className="booking-card-label">Referring Clinician</h4>
-            <div className="clinician-profile-row">
-              <div className="clinician-avatar-badge">
+          <div className="booking-card clinician-auth-booking-card">
+            <div className="booking-card-header-flex">
+              <h4 className="booking-card-label" style={{ margin: 0 }}>Referring Clinician Authorization</h4>
+              <span className="summary-status-pill pill-active-verified" style={{ margin: 0, padding: '2px 8px', fontSize: '11px' }}>
+                <CheckCircle2 size={11} className="text-emerald" />
+                <span>MDCN Verified</span>
+              </span>
+            </div>
+            <div className="clinician-profile-row" style={{ marginTop: '12px' }}>
+              <div className="clinician-avatar-badge-large" style={{ width: '42px', height: '42px', fontSize: '16px' }}>
                 {doctorInitial}
               </div>
-              <div className="clinician-names-col">
-                <span className="clinician-primary-name">{doctorName}</span>
-                <span className="clinician-sub-specialty">{doctorSpecialty}</span>
+              <div className="clinician-names-col" style={{ gap: '2px' }}>
+                <span className="clinician-primary-name" style={{ fontSize: '14.5px' }}>{doctorName}</span>
+                <span className="clinician-sub-specialty" style={{ fontSize: '12px' }}>{doctorSpecialty} • {user.practiceName || 'ResQ Medical Center'}</span>
+                <span className="clinician-license-num font-mono" style={{ fontSize: '11px', color: '#64748B' }}>License: {user.licenseNumber || 'MDCN-REG-847291'}</span>
               </div>
+            </div>
+            <div className="booking-clinician-signoff-line">
+              <ShieldCheck size={13} className="text-emerald" />
+              <span>Digitally signed requisition order attached & authorized for facility dispatch</span>
             </div>
           </div>
 

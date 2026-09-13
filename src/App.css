@@ -2919,14 +2919,21 @@
    Facility Marketplace & Select Facility View Styles (Image 3)
    ========================================================================== */
 
-.marketplace-layout {
+.marketplace-layout,
+.referral-review-fullpage,
+.booking-summary-layout {
   min-height: 100vh;
+  width: 100%;
   background-color: #F8FAFC;
   display: flex;
   flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .marketplace-navbar {
+  width: 100% !important;
+  box-sizing: border-box !important;
   height: 64px;
   background-color: #FFFFFF;
   border-bottom: 1px solid #E2E8F0;
@@ -2936,6 +2943,8 @@
   padding: 0 32px;
   position: sticky;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
@@ -5543,54 +5552,405 @@
   box-shadow: 0 0 0 3px rgba(10, 126, 100, 0.12);
 }
 
-.summary-clinician-attachment-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  align-items: center;
+/* ==========================================================================
+   Referring Clinician Authorization Card (Executive Clinical Redesign)
+   ========================================================================== */
+.clinician-auth-card-wrapper {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 24px 28px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-@media (max-width: 640px) {
-  .summary-clinician-attachment-grid {
-    grid-template-columns: 1fr;
-  }
+.clinician-auth-card-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0A7E64 0%, #0D9488 50%, #06202E 100%);
 }
 
-.referral-clinician-detail-row {
+.badge-teal-gradient {
+  background: linear-gradient(135deg, #ECFDF5 0%, #CCFBF1 100%) !important;
+  color: #0F766E !important;
+}
+
+.pill-active-verified {
+  background-color: #ECFDF5 !important;
+  border: 1px solid #A7F3D0 !important;
+  color: #0A7E64 !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+}
+
+/* Clinician Credentials Panel */
+.clinician-auth-credentials-panel {
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: space-between;
+  gap: 24px;
+  background-color: #F8FAFC;
+  border: 1px solid #EDF2F7;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-top: 6px;
 }
 
-.referral-clinician-circle-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: #06202E;
-  color: #FFFFFF;
-  font-weight: 700;
-  font-size: 15px;
+.clinician-auth-profile-left {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.clinician-auth-avatar-wrap {
+  position: relative;
   flex-shrink: 0;
 }
 
-.referral-clinician-names-block {
+.clinician-avatar-badge-large {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #06202E 0%, #0F3B52 100%);
+  color: #FFFFFF;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(6, 32, 46, 0.16);
+  border: 2px solid #FFFFFF;
+}
+
+.auth-avatar-status-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #10B981;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.3);
+}
+
+.clinician-auth-identity {
   display: flex;
   flex-direction: column;
+  gap: 5px;
+  min-width: 0;
 }
 
-.referral-clinician-name-main {
-  font-size: 14.5px;
+.clinician-auth-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.clinician-full-name {
+  font-size: 16.5px;
+  font-weight: 800;
+  color: #06202E;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.clinician-cadre-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0F766E;
+  background-color: #F0FDFA;
+  border: 1px solid #CCFBF1;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.1px;
+}
+
+.clinician-meta-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.clinician-specialty-pill,
+.clinician-facility-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 3px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.clinician-specialty-pill {
+  color: #0A7E64;
+  background-color: #F0FDF4;
+  border-color: #DCFCE7;
+}
+
+.clinician-contact-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.clinician-contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+/* MDCN License Accreditation Box */
+.clinician-auth-license-box {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 250px;
+  box-shadow: 0 1px 3px rgba(6, 32, 46, 0.03);
+}
+
+.auth-license-header-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #94A3B8;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.auth-license-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.auth-license-code-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-license-number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
   font-weight: 700;
   color: #06202E;
+  letter-spacing: 0.3px;
 }
 
-.referral-clinician-role-sub {
-  font-size: 12px;
+.btn-copy-license-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-license-sm:hover {
+  background-color: #06202E;
+  color: #FFFFFF;
+  border-color: #06202E;
+}
+
+.auth-badge-verified {
+  font-size: 10px;
+  font-weight: 800;
+  color: #0A7E64;
+  background-color: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.auth-license-board {
+  font-size: 11px;
+  font-weight: 500;
   color: #64748B;
-  margin-top: 1px;
+}
+
+.auth-license-prescribing {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #0D9488;
+}
+
+/* Legal Attestation Statement & Digital Seal */
+.clinician-attestation-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 10px;
+}
+
+.attestation-text-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.attestation-statement-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #0A7E64;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.attestation-statement-quote {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #334155;
+  font-style: italic;
+  margin: 0;
+}
+
+.attestation-signature-side {
+  flex-shrink: 0;
+}
+
+.attestation-signature-stamp {
+  background-color: #FFFFFF;
+  border: 1.5px solid #A7F3D0;
+  border-radius: 9px;
+  padding: 9px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(10, 126, 100, 0.08);
+  min-width: 170px;
+}
+
+.signature-doctor-handwriting {
+  font-family: 'Brush Script MT', 'Dancing Script', 'Caveat', 'Segoe Script', cursive, Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #06202E;
+  letter-spacing: 0.5px;
+  transform: rotate(-2deg);
+  line-height: 1.2;
+}
+
+.signature-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 4px;
+}
+
+.signature-timestamp {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #0A7E64;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.signature-security-hash {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 8.5px;
+  color: #94A3B8;
+  letter-spacing: 0.2px;
+}
+
+/* Document & Safety Footer */
+.clinician-auth-footer-row {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.clinician-safety-checks-strip {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 8px 14px;
+  background-color: #F8FAFC;
+  border-radius: 8px;
+  border: 1px solid #F1F5F9;
+  flex-wrap: wrap;
+}
+
+.safety-check-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Booking summary clinician card extras */
+.clinician-auth-booking-card {
+  border-left: 3px solid #0A7E64 !important;
+}
+
+.booking-card-header-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.booking-clinician-signoff-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: #0F766E;
+  background-color: #F0FDFA;
+  border: 1px solid #CCFBF1;
+  padding: 7px 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-weight: 500;
 }
 
 .review-document-pill-executive {
@@ -10026,6 +10386,67 @@
 
   .option-card-content p {
     font-size: 12px;
+  }
+
+  /* Referring Clinician Authorization Card Mobile Styling */
+  .clinician-auth-card-wrapper {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+
+  .clinician-auth-credentials-panel {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 12px;
+    gap: 14px;
+  }
+
+  .clinician-auth-profile-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .clinician-auth-license-box {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+  }
+
+  .clinician-attestation-block {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 12px;
+    gap: 14px;
+  }
+
+  .attestation-signature-stamp {
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  .clinician-safety-checks-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .referral-page-summary-wrapper {
+    padding: 0 12px;
+    margin: 16px auto 32px auto;
+  }
+
+  .referral-summary-header-banner {
+    padding: 16px 14px;
+  }
+
+  .summary-banner-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }
 

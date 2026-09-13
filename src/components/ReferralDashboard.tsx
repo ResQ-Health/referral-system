@@ -1393,6 +1393,31 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     { id: 'reports', label: 'Reports', icon: PieChart },
   ];
 
+  if (dashboardView === 'referral-review') {
+    return (
+      <ReferralReview
+        formData={formData}
+        user={user}
+        uploadedFileName={uploadedFile?.name}
+        onEditPersonalInfo={() => {
+          setDashboardView('dashboard');
+          setModalStep('patient-info');
+        }}
+        onEditScanDetails={() => {
+          setDashboardView('dashboard');
+          setModalStep('scan-details');
+        }}
+        onProceed={() => {
+          setDashboardView('dashboard');
+          setModalStep('scan-location');
+        }}
+        onUpdateFormData={(updated) => setFormData((prev) => ({ ...prev, ...updated }))}
+        onProceedToBooking={() => setDashboardView('marketplace')}
+        onBackToDashboard={() => setDashboardView('dashboard')}
+      />
+    );
+  }
+
   if (dashboardView === 'marketplace') {
     return (
       <FacilityMarketplace
@@ -1877,20 +1902,6 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     phone: user.phoneNumber,
                   }}
                   fileName={uploadedFile?.name}
-                />
-              </div>
-            ) : dashboardView === 'referral-review' ? (
-              <div className="clinician-body">
-                <ReferralReview
-                  formData={formData}
-                  user={user}
-                  uploadedFileName={uploadedFile?.name}
-                  onEditPersonalInfo={() => setModalStep('patient-info')}
-                  onEditScanDetails={() => setModalStep('scan-details')}
-                  onProceed={() => setModalStep('scan-location')}
-                  onUpdateFormData={(updated) => setFormData((prev) => ({ ...prev, ...updated }))}
-                  onProceedToBooking={() => setDashboardView('marketplace')}
-                  onBackToDashboard={() => setDashboardView('dashboard')}
                 />
               </div>
             ) : (

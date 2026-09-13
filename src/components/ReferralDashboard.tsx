@@ -47,6 +47,7 @@ import type { Facility } from './FacilityMarketplace';
 import { BookingSummary } from './BookingSummary';
 import { ReferralSuccess } from './ReferralSuccess';
 import { ReferralReview } from './ReferralReview';
+import { RequisitionDocumentModal } from './RequisitionDocumentModal';
 import { SearchableSelect } from './SearchableSelect';
 import {
   apiGetClinicalCatalog,
@@ -440,6 +441,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     time: '10:10 am',
     display: 'Thu 20 February at 10:10 am',
   });
+  const [isRequisitionModalOpen, setIsRequisitionModalOpen] = useState(false);
   const [submittedReferralInfo, setSubmittedReferralInfo] = useState<{
     id: string;
     patientName: string;
@@ -448,6 +450,17 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     facilityName: string;
     status: string;
     referralLink: string;
+    bookingSlot?: { date: string; time: string; display: string };
+    patientEmail?: string;
+    patientPhone?: string;
+    patientGender?: string;
+    patientDob?: string;
+    urgency?: string;
+    createdAt?: string;
+    doctorName?: string;
+    facilityAddress?: string;
+    contrastOption?: string;
+    clinicalNote?: string;
   }>({
     id: 'REF-20260123-00001',
     patientName: 'Anthony Odafe',
@@ -456,6 +469,19 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     facilityName: 'Phoebe Medical Center',
     status: 'Submitted',
     referralLink: 'resqhealth.africa/referral/REF-20260123-00',
+    bookingSlot: {
+      date: 'Thu 20 February',
+      time: '10:10 am',
+      display: 'Thu 20 February at 10:10 am',
+    },
+    patientEmail: 'anthony.odafe@example.com',
+    patientPhone: '+234 803 123 4567',
+    patientGender: 'Male',
+    urgency: 'Routine',
+    createdAt: 'Today • 10:15 AM',
+    doctorName: 'Dr. Enaikele Omoh',
+    facilityAddress: 'Phoebe Center, Victoria Island, Lagos',
+    contrastOption: 'Without Contrast',
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1202,6 +1228,16 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
         facilityName: 'Patient Choice (Open Referral)',
         status: 'Submitted',
         referralLink,
+        patientEmail: formData.email,
+        patientPhone: formData.phone,
+        patientGender: formData.gender,
+        patientDob: formData.dob,
+        urgency: 'Routine',
+        createdAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        doctorName: user.fullname || 'Dr. Enaikele Omoh',
+        facilityAddress: 'Accredited ResQ Diagnostic Network',
+        contrastOption: formData.contrastOption || 'Without Contrast',
+        clinicalNote: formData.clinicalNote,
       });
 
       // Persist to MongoDB and dispatch patient email notification
@@ -1292,6 +1328,17 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       facilityName: facilityNameToUse,
       status: 'Booking in Progress',
       referralLink,
+      bookingSlot: selectedSlot || undefined,
+      patientEmail: formData.email,
+      patientPhone: formData.phone,
+      patientGender: formData.gender,
+      patientDob: formData.dob,
+      urgency: 'Routine',
+      createdAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      doctorName: user.fullname || 'Dr. Enaikele Omoh',
+      facilityAddress: selectedFacility?.address || 'Victoria Island, Lagos',
+      contrastOption: formData.contrastOption || 'Without Contrast',
+      clinicalNote: formData.clinicalNote,
     });
 
     // Persist to MongoDB and dispatch patient email notification
@@ -1774,14 +1821,62 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
         {activeTab === 'referrals' && (
           <div className="referrals-view-wrapper">
             {dashboardView === 'submitted-success' ? (
-              <div className="clinician-body">
+              <div className="clinician-body clinician-body-success-screen">
                 <ReferralSuccess
                   referral={submittedReferralInfo}
                   onViewReferrals={() => {
                     setDashboardView('dashboard');
                     setActiveTab('referrals');
                   }}
+                  onCreateNewReferral={() => {
+                    setDashboardView('dashboard');
+                    setActiveTab('referrals');
+                    setFormData({
+                      fullName: '',
+                      gender: '',
+                      dob: '',
+                      email: '',
+                      phone: '',
+                      address: '',
+                      scanType: '',
+                      bodyPart: '',
+                      contrastOption: 'Without Contrast',
+                      clinicalNote: '',
+                    });
+                    setUploadedFile(null);
+                    setModalStep('choose-type');
+                  }}
+                  onViewRequisition={() => {
+                    setIsRequisitionModalOpen(true);
+                  }}
                   onAddToast={onAddToast}
+                />
+                <RequisitionDocumentModal
+                  isOpen={isRequisitionModalOpen}
+                  onClose={() => setIsRequisitionModalOpen(false)}
+                  patientData={{
+                    fullName: submittedReferralInfo.patientName,
+                    email: submittedReferralInfo.patientEmail,
+                    phone: submittedReferralInfo.patientPhone,
+                    gender: submittedReferralInfo.patientGender,
+                    dob: submittedReferralInfo.patientDob,
+                    address: formData.address,
+                  }}
+                  referralData={{
+                    scanType: submittedReferralInfo.scanType,
+                    bodyPart: submittedReferralInfo.bodyPart || 'General',
+                    contrastOption: submittedReferralInfo.contrastOption,
+                    clinicalNote: submittedReferralInfo.clinicalNote || 'Standard clinical imaging evaluation.',
+                    preferredCenter: submittedReferralInfo.facilityName,
+                  }}
+                  clinicianData={{
+                    name: user.fullname,
+                    specialty: user.specialty,
+                    facility: user.practiceName,
+                    email: user.email,
+                    phone: user.phoneNumber,
+                  }}
+                  fileName={uploadedFile?.name}
                 />
               </div>
             ) : dashboardView === 'referral-review' ? (

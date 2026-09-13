@@ -10824,3 +10824,50 @@
     top: 12px;
   }
 }
+
+/* Scan Details Required Validation Styles */
+.resq-select-boxed.is-error,
+.referral-unit-select.is-error,
+.scan-unlocked-input.is-error {
+  border-color: #EF4444 !important;
+  background-color: #FEF2F2 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12) !important;
+}
+
+.resq-field-error-msg {
+  color: #EF4444;
+  font-size: 11.5px;
+  margin-top: 5px;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.resq-scan-validation-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 8px;
+  color: #B91C1C;
+  font-size: 12.5px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

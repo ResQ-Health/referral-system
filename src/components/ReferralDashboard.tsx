@@ -41,6 +41,7 @@ import {
   Phone,
   Award,
   Menu,
+  AlertCircle,
 } from 'lucide-react';
 import { FacilityMarketplace, SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
 import type { Facility } from './FacilityMarketplace';
@@ -561,9 +562,11 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     address: '',
     scanType: '',
     bodyPart: '',
-    contrastOption: 'Not Specified',
+    contrastOption: '',
     clinicalNote: '',
   });
+
+  const [scanErrors, setScanErrors] = useState<{ scanType?: string; bodyPart?: string; contrastOption?: string }>({});
 
   const [patientWorkflowType, setPatientWorkflowType] = useState<'existing' | 'new'>('new');
   const [newUserForm, setNewUserForm] = useState({
@@ -933,10 +936,12 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
   const closeModal = () => {
     setModalStep('none');
+    setScanErrors({});
   };
 
   // Smooth back navigation between modals
   const handleModalBack = () => {
+    setScanErrors({});
     if (modalStep === 'choose-existing' || modalStep === 'choose-draft') {
       setModalStep('choose-type');
     } else if (modalStep === 'patient-info') {
@@ -954,13 +959,33 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     }
   };
 
-  // Direct step jump from progress bar
+  // Direct step jump from progress bar with validation
   const handleStepJump = (targetStep: 1 | 2 | 3) => {
     if (targetStep === 1) {
       setModalStep('patient-info');
     } else if (targetStep === 2) {
       setModalStep('scan-details');
     } else if (targetStep === 3) {
+      // Validate scan details before allowing jump to step 3
+      const errors: { scanType?: string; bodyPart?: string; contrastOption?: string } = {};
+      if (!formData.scanType?.trim()) errors.scanType = 'Scan type is required to proceed';
+      if (!formData.bodyPart?.trim()) errors.bodyPart = 'Body part is required to proceed';
+      if (!formData.contrastOption?.trim()) errors.contrastOption = 'Contrast option is required to proceed';
+      if (Object.keys(errors).length > 0) {
+        setScanErrors(errors);
+        if (modalStep !== 'scan-details') {
+          setModalStep('scan-details');
+        }
+        if (onAddToast) {
+          onAddToast(
+            'error',
+            'Incomplete Scan Details',
+            'Please select Scan Type, Body Part, and Contrast Option before proceeding.'
+          );
+        }
+        return;
+      }
+      setScanErrors({});
       setModalStep('scan-location');
     }
   };
@@ -969,6 +994,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   const handleSelectType = (type: 'existing' | 'new') => {
     setPatientWorkflowType(type);
     setExistingPatientFound(false);
+    setScanErrors({});
     setNewUserForm({
       fullName: '',
       gender: 'Male',
@@ -987,7 +1013,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
         address: '',
         scanType: '',
         bodyPart: '',
-        contrastOption: 'Not Specified',
+        contrastOption: '',
         clinicalNote: '',
       });
       setSelectedPatientId(null);
@@ -1004,7 +1030,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
         address: '',
         scanType: '',
         bodyPart: '',
-        contrastOption: 'Not Specified',
+        contrastOption: '',
         clinicalNote: '',
       });
       setSelectedPatientId(null);
@@ -1019,6 +1045,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     setPatientWorkflowType('existing');
     setSelectedPatientId(patient.id);
     setExistingPatientFound(true);
+    setScanErrors({});
     setFormData({
       fullName: patient.name,
       gender: patient.gender,
@@ -1028,7 +1055,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       address: patient.address,
       scanType: '',
       bodyPart: '',
-      contrastOption: 'Not Specified',
+      contrastOption: '',
       clinicalNote: '',
     });
     setNewUserForm({
@@ -1110,7 +1137,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   // 4. Resume Selected Draft from List
   const handleResumeDraft = (draft: ReferralDraft) => {
     setActiveDraftId(draft.id);
-    setFormData({ contrastOption: 'Not Specified', ...draft.formData });
+    setScanErrors({});
+    setFormData({ contrastOption: '', ...draft.formData });
     if (draft.workflowType === 'new') {
       setNewUserForm({
         fullName: draft.formData.fullName || '',
@@ -3541,6 +3569,28 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                const errors: { scanType?: string; bodyPart?: string; contrastOption?: string } = {};
+                if (!formData.scanType?.trim()) {
+                  errors.scanType = 'Scan type is required to proceed';
+                }
+                if (!formData.bodyPart?.trim()) {
+                  errors.bodyPart = 'Body part is required to proceed';
+                }
+                if (!formData.contrastOption?.trim()) {
+                  errors.contrastOption = 'Contrast option is required to proceed';
+                }
+                if (Object.keys(errors).length > 0) {
+                  setScanErrors(errors);
+                  if (onAddToast) {
+                    onAddToast(
+                      'error',
+                      'Incomplete Scan Details',
+                      'Please select Scan Type, Body Part, and Contrast Option before proceeding.'
+                    );
+                  }
+                  return;
+                }
+                setScanErrors({});
                 if (patientWorkflowType === 'new') {
                   closeModal();
                   setDashboardView('referral-review');
@@ -3549,16 +3599,26 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 }
               }}
             >
+              {Object.keys(scanErrors).length > 0 && (
+                <div className="resq-scan-validation-alert">
+                  <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                  <span>Please fill in all required fields (Scan Type, Body Part, and Contrast) before proceeding.</span>
+                </div>
+              )}
+
               {/* Scan Type */}
               <div className="resq-form-group">
                 <label className="resq-form-label" style={{ fontSize: '12.5px', fontWeight: 500 }}>
-                  Scan Type
+                  Scan Type <span style={{ color: '#EF4444' }}>*</span>
                 </label>
                 <div className="resq-input-wrapper">
                   <select
                     value={formData.scanType}
-                    onChange={(e) => setFormData({ ...formData, scanType: e.target.value })}
-                    className="resq-select-boxed"
+                    onChange={(e) => {
+                      setFormData({ ...formData, scanType: e.target.value });
+                      if (scanErrors.scanType) setScanErrors((prev) => ({ ...prev, scanType: '' }));
+                    }}
+                    className={`resq-select-boxed ${scanErrors.scanType ? 'is-error' : ''}`}
                   >
                     <option value="">Select scan type</option>
                     {catalogScanTypes.map((st) => (
@@ -3569,6 +3629,12 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                   </select>
                   <ChevronsUpDown size={15} className="resq-select-chevron" />
                 </div>
+                {scanErrors.scanType && (
+                  <p className="resq-field-error-msg">
+                    <AlertCircle size={12} />
+                    <span>{scanErrors.scanType}</span>
+                  </p>
+                )}
               </div>
 
               {/* Body Part (Searchable Combobox) */}
@@ -3577,9 +3643,14 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                   id="referral-modal-body-part"
                   label="Body Part"
                   labelClassName="resq-form-label"
+                  required
+                  error={scanErrors.bodyPart}
                   options={catalogBodyParts}
                   value={formData.bodyPart}
-                  onChange={(val) => setFormData({ ...formData, bodyPart: val })}
+                  onChange={(val) => {
+                    setFormData({ ...formData, bodyPart: val });
+                    if (scanErrors.bodyPart) setScanErrors((prev) => ({ ...prev, bodyPart: '' }));
+                  }}
                   placeholder="Select or search body part (e.g. Brain, Chest, Femur)..."
                   hint="Search and select from 67 anatomical targets"
                 />
@@ -3588,14 +3659,18 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
               {/* Contrast Selection */}
               <div className="resq-form-group">
                 <label className="resq-form-label" style={{ fontSize: '12.5px', fontWeight: 500 }}>
-                  Contrast Selection
+                  Contrast Selection <span style={{ color: '#EF4444' }}>*</span>
                 </label>
                 <div className="resq-input-wrapper">
                   <select
-                    value={formData.contrastOption || 'Not Specified'}
-                    onChange={(e) => setFormData({ ...formData, contrastOption: e.target.value })}
-                    className="resq-select-boxed"
+                    value={formData.contrastOption || ''}
+                    onChange={(e) => {
+                      setFormData({ ...formData, contrastOption: e.target.value });
+                      if (scanErrors.contrastOption) setScanErrors((prev) => ({ ...prev, contrastOption: '' }));
+                    }}
+                    className={`resq-select-boxed ${scanErrors.contrastOption ? 'is-error' : ''}`}
                   >
+                    <option value="">Select contrast option</option>
                     {catalogContrastOptions.map((co) => (
                       <option key={co} value={co}>
                         {co}
@@ -3604,6 +3679,12 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                   </select>
                   <ChevronsUpDown size={15} className="resq-select-chevron" />
                 </div>
+                {scanErrors.contrastOption && (
+                  <p className="resq-field-error-msg">
+                    <AlertCircle size={12} />
+                    <span>{scanErrors.contrastOption}</span>
+                  </p>
+                )}
                 <p style={{ fontSize: '11px', color: '#64748B', marginTop: '4px', marginBottom: 0 }}>
                   Select contrast protocol (with contrast, without contrast, or not specified)
                 </p>

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ArrowLeft,
   AlertTriangle,
   Star,
   ShieldCheck,
   CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import type { Facility } from './FacilityMarketplace';
 import { SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
@@ -42,6 +43,7 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
   user,
   facility,
   slot,
+  patientName,
   referralData,
   onBackToMarketplace,
   onEditBooking,
@@ -57,6 +59,23 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
     ? doctorDisplayName.substring(3).trim()
     : doctorDisplayName
   ).charAt(0).toUpperCase() || 'E';
+
+  const [scanErrors, setScanErrors] = useState<{ scanType?: string; bodyPart?: string; contrastOption?: string }>({});
+
+  const handleSubmit = () => {
+    const errors: { scanType?: string; bodyPart?: string; contrastOption?: string } = {};
+    if (!referralData.scanType?.trim()) errors.scanType = 'Scan type is required to proceed';
+    if (!referralData.bodyPart?.trim()) errors.bodyPart = 'Body part is required to proceed';
+    if (!referralData.contrastOption?.trim()) errors.contrastOption = 'Contrast option is required to proceed';
+    if (Object.keys(errors).length > 0) {
+      setScanErrors(errors);
+      const el = document.getElementById('booking-summary-scan-card');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    setScanErrors({});
+    onSubmitReferral();
+  };
 
   return (
     <div className="booking-summary-layout">
@@ -89,21 +108,21 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
               <span className="step-pill-number">✓</span>
               <span className="step-pill-text">Summary</span>
             </button>
-            <div className="market-stepper-line completed" />
+            <span className="market-nav-step-divider">›</span>
             <button
               type="button"
               className="market-nav-step-pill completed"
               onClick={onBackToMarketplace}
-              title="Return to Step 2: Diagnostic Provider Selection"
+              title="Return to Step 2: Select Provider"
             >
               <span className="step-pill-number">✓</span>
               <span className="step-pill-text">Provider</span>
             </button>
-            <div className="market-stepper-line active" />
+            <span className="market-nav-step-divider">›</span>
             <button
               type="button"
               className="market-nav-step-pill active"
-              title="Step 3: Booking Summary & Final Submission"
+              title="Current Step 3: Booking Summary"
             >
               <span className="step-pill-number">3</span>
               <span className="step-pill-text">Booking</span>
@@ -112,190 +131,235 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
         </div>
 
         <div className="marketplace-nav-right">
-          <div className="marketplace-doctor-pill">
-            <div className="doctor-avatar-circle">
-              {doctorInitial}
-            </div>
-            <div className="doctor-pill-info">
-              <div className="doctor-pill-name-row">
-                <span className="doctor-pill-name">{doctorName}</span>
-                <span className="doctor-verified-dot" title="Authenticated Clinician" />
-              </div>
-              <span className="doctor-pill-specialty">{doctorSpecialty}</span>
+          <div className="marketplace-clinician-badge">
+            <div className="clinician-avatar-badge">{doctorInitial}</div>
+            <div className="clinician-badge-meta">
+              <span className="clinician-badge-name">{doctorName}</span>
+              <span className="clinician-badge-role">{doctorSpecialty}</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Sub-Header: Professional Clinical Route Breadcrumbs */}
-      <div className="summary-breadcrumb-bar">
-        <div className="breadcrumb-left">
-          <button type="button" className="btn-back-link" onClick={onBackToMarketplace}>
-            <ArrowLeft size={15} />
-            <span>Back to Provider Selection</span>
-          </button>
-          <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-item active">Order Summary & Appointment Hold</span>
-        </div>
+      {/* Main Content Area */}
+      <div className="booking-summary-content">
+        <h2 className="booking-page-title">Booking Summary</h2>
 
-        <div className="clinical-clearance-badge">
-          <span className="clearance-dot" />
-          <span>Slot Reserved • Pending Center Clearance</span>
-        </div>
-      </div>
-
-      {/* Main 2-Column Body */}
-      <div className="booking-summary-body">
-        {/* Left Column: Facility Information & Pricing */}
-        <div className="booking-left-col">
-          <div className="facility-summary-card">
-            <div className="facility-thumb-wrap">
-              <img src={facility.image} alt={facility.name} className="facility-thumb-img" />
-            </div>
-
-            <h2 className="facility-summary-name">{facility.name}</h2>
-            <p className="facility-summary-address">{facility.address}</p>
-            <p className="facility-summary-slot">{slot.display || 'Wed, 5th Feb at 2:30PM'}</p>
-
-            <div className="facility-summary-rating">
-              <span className="rating-num">{facility.rating}</span>
-              <div className="rating-stars">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={13} fill="#F59E0B" color="#F59E0B" />
-                ))}
+        <div className="booking-two-col-grid">
+          {/* Left Column: Facility Card & Patient Info */}
+          <div className="booking-left-col">
+            {/* Facility Card */}
+            <div className="booking-card">
+              <div className="facility-summary-header">
+                <div className="facility-sum-avatar">
+                  {facility.name.substring(0, 2).toUpperCase()}
+                </div>
+                <div className="facility-sum-info">
+                  <h3 className="facility-sum-name">{facility.name}</h3>
+                  <p className="facility-sum-address">{facility.address}</p>
+                  <div className="facility-sum-rating-row">
+                    <Star size={13} className="star-filled" />
+                    <span className="rating-score">{facility.rating}</span>
+                    <span className="review-count">({facility.reviewsCount} reviews)</span>
+                  </div>
+                </div>
               </div>
-              <span className="rating-total">({facility.reviewsCount})</span>
+
+              <div className="booking-detail-divider" />
+
+              <div className="booking-meta-list">
+                <div className="booking-meta-item">
+                  <span className="meta-label">Selected Date & Time</span>
+                  <span className="meta-value-highlight">{slot.display}</span>
+                </div>
+                <div className="booking-meta-item">
+                  <span className="meta-label">Total Cost</span>
+                  <span className="meta-price-large">₦{facility.price.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <button type="button" className="btn-edit-booking" onClick={onEditBooking} style={{ marginTop: '12px' }}>
+                Edit booking
+              </button>
             </div>
 
-            <button type="button" className="btn-edit-booking" onClick={onEditBooking}>
-              Edit booking
-            </button>
-
-            <div className="facility-total-cost-box">
-              <span className="cost-label">Total Cost:</span>
-              <span className="cost-value">₦{facility.price.toLocaleString()}</span>
+            {/* Patient Information Card */}
+            <div className="booking-card">
+              <h4 className="booking-card-label">Patient Information</h4>
+              <div className="booking-meta-list">
+                <div className="booking-meta-item">
+                  <span className="meta-label">Full Name</span>
+                  <span className="meta-value">{patientName}</span>
+                </div>
+                <div className="booking-meta-item">
+                  <span className="meta-label">Referred By</span>
+                  <span className="meta-value">{doctorName}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <p className="recaptcha-legal-notice">
-            This site is protected by reCAPTCHA and the Google{' '}
-            <a href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</a> and{' '}
-            <a href="#" onClick={(e) => e.preventDefault()}>Terms of Service</a> apply.
-          </p>
-        </div>
-
-        {/* Right Column: Clinician, Scan Details (UNLOCKED), and Submit */}
-        <div className="booking-right-col">
-          {/* Card 1: Referring Clinician */}
-          <div className="booking-card clinician-auth-booking-card">
-            <div className="booking-card-header-flex">
-              <h4 className="booking-card-label" style={{ margin: 0 }}>Referring Clinician Authorization</h4>
-              <span className="summary-status-pill pill-active-verified" style={{ margin: 0, padding: '2px 8px', fontSize: '11px' }}>
-                <CheckCircle2 size={11} className="text-emerald" />
-                <span>MDCN Verified</span>
-              </span>
-            </div>
-            <div className="clinician-profile-row" style={{ marginTop: '12px' }}>
-              <div className="clinician-avatar-badge-large" style={{ width: '42px', height: '42px', fontSize: '16px' }}>
-                {doctorInitial}
-              </div>
-              <div className="clinician-names-col" style={{ gap: '2px' }}>
-                <span className="clinician-primary-name" style={{ fontSize: '14.5px' }}>{doctorName}</span>
-                <span className="clinician-sub-specialty" style={{ fontSize: '12px' }}>{doctorSpecialty} • {user.practiceName || 'ResQ Medical Center'}</span>
-                <span className="clinician-license-num font-mono" style={{ fontSize: '11px', color: '#64748B' }}>License: {user.licenseNumber || 'MDCN-REG-847291'}</span>
-              </div>
-            </div>
-            <div className="booking-clinician-signoff-line">
-              <ShieldCheck size={13} className="text-emerald" />
-              <span>Digitally signed requisition order attached & authorized for facility dispatch</span>
-            </div>
-          </div>
-
-          {/* Card 2: Scan Details (UNLOCKED, NO LOCK ICONS!) */}
-          <div className="booking-card">
-            <h4 className="booking-card-label">Scan Details</h4>
-
-            <div className="scan-details-grid-unlocked">
-              <div className="scan-field-group">
-                <label className="scan-field-label">Scan Type</label>
-                <select
-                  value={referralData.scanType || 'MRI Scan (Magnetic Resonance Imaging)'}
-                  onChange={(e) => onUpdateReferralData({ ...referralData, scanType: e.target.value })}
-                  className="scan-unlocked-input"
-                >
-                  {SCAN_TYPES.map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
-                  ))}
-                </select>
+          {/* Right Column: Clinician, Scan Details (UNLOCKED), and Submit */}
+          <div className="booking-right-col">
+            {/* Card 1: Referring Clinician Authorization */}
+            <div className="referral-summary-card-executive clinician-auth-card-executive">
+              <div className="referral-card-section-header">
+                <div className="section-header-title-group">
+                  <div className="section-icon-badge">
+                    <ShieldCheck size={16} />
+                  </div>
+                  <div>
+                    <h3 className="referral-card-section-label">Referring Clinician Authorization</h3>
+                    <p className="referral-card-section-desc">Medical Council Credentials & Order Verification</p>
+                  </div>
+                </div>
+                <div className="clinician-auth-status-pill">
+                  <CheckCircle2 size={13} />
+                  <span>Authorized</span>
+                </div>
               </div>
 
-              <div className="scan-field-group">
-                <SearchableSelect
-                  label="Body Part"
-                  labelClassName="scan-field-label"
-                  options={BODY_PARTS}
-                  value={referralData.bodyPart || 'Brain'}
-                  onChange={(val) => onUpdateReferralData({ ...referralData, bodyPart: val })}
-                  placeholder="Search & select body part..."
+              <div className="clinician-profile-row-executive">
+                <div className="clinician-avatar-badge-lg">
+                  {doctorInitial}
+                </div>
+                <div className="clinician-profile-meta-main">
+                  <div className="clinician-name-badge-row">
+                    <h4 className="clinician-name-title">{doctorName}</h4>
+                    <span className="clinician-verified-tag">MDCN Registered</span>
+                  </div>
+                  <p className="clinician-role-subtitle">{doctorSpecialty}</p>
+                </div>
+              </div>
+
+              <div className="clinician-auth-footer-bar">
+                <CheckCircle2 size={12} className="text-emerald" />
+                <span>Digitally signed requisition order attached & authorized for facility dispatch</span>
+              </div>
+            </div>
+
+            {/* Card 2: Scan Details (UNLOCKED, NO LOCK ICONS!) */}
+            <div className="booking-card" id="booking-summary-scan-card">
+              <h4 className="booking-card-label">Scan Details</h4>
+
+              {Object.keys(scanErrors).length > 0 && (
+                <div className="resq-scan-validation-alert">
+                  <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                  <span>Please fill in all required fields (Scan Type, Body Part, and Contrast) before submitting.</span>
+                </div>
+              )}
+
+              <div className="scan-details-grid-unlocked">
+                <div className="scan-field-group">
+                  <label className="scan-field-label">
+                    Scan Type <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <select
+                    value={referralData.scanType || ''}
+                    onChange={(e) => {
+                      onUpdateReferralData({ ...referralData, scanType: e.target.value });
+                      if (scanErrors.scanType) setScanErrors((prev) => ({ ...prev, scanType: '' }));
+                    }}
+                    className={`scan-unlocked-input ${scanErrors.scanType ? 'is-error' : ''}`}
+                  >
+                    <option value="">Select scan type</option>
+                    {SCAN_TYPES.map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                  {scanErrors.scanType && (
+                    <p className="resq-field-error-msg">
+                      <AlertCircle size={12} />
+                      <span>{scanErrors.scanType}</span>
+                    </p>
+                  )}
+                </div>
+
+                <div className="scan-field-group">
+                  <SearchableSelect
+                    label="Body Part"
+                    labelClassName="scan-field-label"
+                    required
+                    error={scanErrors.bodyPart}
+                    options={BODY_PARTS}
+                    value={referralData.bodyPart || ''}
+                    onChange={(val) => {
+                      onUpdateReferralData({ ...referralData, bodyPart: val });
+                      if (scanErrors.bodyPart) setScanErrors((prev) => ({ ...prev, bodyPart: '' }));
+                    }}
+                    placeholder="Search & select body part..."
+                  />
+                </div>
+
+                <div className="scan-field-group">
+                  <label className="scan-field-label">
+                    Contrast Selection <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <select
+                    value={referralData.contrastOption || ''}
+                    onChange={(e) => {
+                      onUpdateReferralData({ ...referralData, contrastOption: e.target.value });
+                      if (scanErrors.contrastOption) setScanErrors((prev) => ({ ...prev, contrastOption: '' }));
+                    }}
+                    className={`scan-unlocked-input ${scanErrors.contrastOption ? 'is-error' : ''}`}
+                  >
+                    <option value="">Select contrast option</option>
+                    {CONTRAST_OPTIONS.map((co) => (
+                      <option key={co} value={co}>
+                        {co}
+                      </option>
+                    ))}
+                  </select>
+                  {scanErrors.contrastOption && (
+                    <p className="resq-field-error-msg">
+                      <AlertCircle size={12} />
+                      <span>{scanErrors.contrastOption}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="scan-field-group" style={{ marginTop: '14px' }}>
+                <label className="scan-field-label">Clinical Note</label>
+                <textarea
+                  value={referralData.clinicalNote}
+                  onChange={(e) => onUpdateReferralData({ ...referralData, clinicalNote: e.target.value })}
+                  className="scan-unlocked-textarea"
+                  rows={3}
+                  placeholder="Clinical notes..."
                 />
               </div>
+            </div>
 
-              <div className="scan-field-group">
-                <label className="scan-field-label">Contrast Selection</label>
-                <select
-                  value={referralData.contrastOption || 'Not Specified'}
-                  onChange={(e) => onUpdateReferralData({ ...referralData, contrastOption: e.target.value })}
-                  className="scan-unlocked-input"
-                >
-                  {CONTRAST_OPTIONS.map((co) => (
-                    <option key={co} value={co}>
-                      {co}
-                    </option>
-                  ))}
-                </select>
+            {/* Card 3: Important Notice */}
+            <div className="important-alert-card">
+              <div className="important-header-row">
+                <AlertTriangle size={16} className="important-alert-icon" />
+                <span className="important-title">Important</span>
               </div>
+              <p className="important-text">
+                The clinic needs to give the "thumbs up" on your selected time before we process payment.
+                Keep an eye on your inbox—we'll let you know the moment you're cleared to pay.
+              </p>
             </div>
 
-            <div className="scan-field-group" style={{ marginTop: '14px' }}>
-              <label className="scan-field-label">Clinical Note</label>
-              <textarea
-                value={referralData.clinicalNote}
-                onChange={(e) => onUpdateReferralData({ ...referralData, clinicalNote: e.target.value })}
-                className="scan-unlocked-textarea"
-                rows={3}
-                placeholder="Clinical notes..."
-              />
-            </div>
-          </div>
+            {/* Bottom Action Row */}
+            <div className="booking-bottom-action-row">
+              <div className="bottom-cost-display">
+                <span>Total Cost:</span>
+                <strong>₦{facility.price.toLocaleString()}</strong>
+              </div>
 
-          {/* Card 3: Important Notice */}
-          <div className="important-alert-card">
-            <div className="important-header-row">
-              <AlertTriangle size={16} className="important-alert-icon" />
-              <span className="important-title">Important</span>
+              <button
+                type="button"
+                className="btn-submit-referral-blue"
+                onClick={handleSubmit}
+              >
+                Submit Referral
+              </button>
             </div>
-            <p className="important-text">
-              The clinic needs to give the "thumbs up" on your selected time before we process payment.
-              Keep an eye on your inbox—we'll let you know the moment you're cleared to pay.
-            </p>
-          </div>
-
-          {/* Bottom Action Row */}
-          <div className="booking-bottom-action-row">
-            <div className="bottom-cost-display">
-              <span>Total Cost:</span>
-              <strong>₦{facility.price.toLocaleString()}</strong>
-            </div>
-
-            <button
-              type="button"
-              className="btn-submit-referral-blue"
-              onClick={onSubmitReferral}
-            >
-              Submit Referral
-            </button>
           </div>
         </div>
       </div>

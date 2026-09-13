@@ -16,6 +16,7 @@ import {
   Phone,
   Copy,
   CheckCheck,
+  AlertCircle,
 } from 'lucide-react';
 import { SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
 import { SearchableSelect } from './SearchableSelect';
@@ -93,8 +94,25 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
     setTimeout(() => setCopiedLicense(false), 2000);
   };
 
-  const scanType = formData.scanType || 'MRI';
-  const bodyPart = formData.bodyPart || 'Brain MRI';
+  const scanType = formData.scanType || '';
+  const bodyPart = formData.bodyPart || '';
+  const contrastOption = formData.contrastOption || '';
+  const [scanErrors, setScanErrors] = useState<{ scanType?: string; bodyPart?: string; contrastOption?: string }>({});
+
+  const validateScanDetails = () => {
+    const errors: { scanType?: string; bodyPart?: string; contrastOption?: string } = {};
+    if (!formData.scanType?.trim()) errors.scanType = 'Scan type is required to proceed';
+    if (!formData.bodyPart?.trim()) errors.bodyPart = 'Body part is required to proceed';
+    if (!formData.contrastOption?.trim()) errors.contrastOption = 'Contrast option is required to proceed';
+    setScanErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const el = document.getElementById('referral-review-scan-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+    return true;
+  };
+
   const clinicalNote =
     formData.clinicalNote ||
     'Patient presents with recurrent headaches, vertigo, and focal neurological symptoms. Rule out intracranial pathology.';
@@ -445,7 +463,7 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
       </div>
 
       {/* 3. SCAN DETAILS SECTION */}
-      <div className="referral-summary-card-executive">
+      <div className="referral-summary-card-executive" id="referral-review-scan-section">
         <div className="referral-card-section-header">
           <div className="section-header-title-group">
             <div className="section-icon-badge">
@@ -453,7 +471,7 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
             </div>
             <div>
               <h3 className="referral-card-section-label">Diagnostic Scan Protocol</h3>
-              <p className="referral-card-section-desc">Select imaging modality and anatomical region using the dropdowns.</p>
+              <p className="referral-card-section-desc">Select imaging modality, anatomical region, and contrast protocol.</p>
             </div>
           </div>
           <button
@@ -467,49 +485,85 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
           </button>
         </div>
 
+        {Object.keys(scanErrors).length > 0 && (
+          <div className="resq-scan-validation-alert">
+            <AlertCircle size={15} style={{ flexShrink: 0 }} />
+            <span>Please fill in all required fields (Scan Type, Body Part, and Contrast) before proceeding.</span>
+          </div>
+        )}
+
         <div className="referral-card-inputs-grid">
           {/* Scan Type DROPDOWN */}
           <div className="referral-input-unit">
-            <label className="referral-unit-label">Scan Type (Dropdown)</label>
+            <label className="referral-unit-label">
+              Scan Type <span style={{ color: '#EF4444' }}>*</span>
+            </label>
             <select
               value={scanType}
-              onChange={(e) => onUpdateFormData?.({ scanType: e.target.value })}
-              className="referral-unit-input referral-unit-select"
+              onChange={(e) => {
+                onUpdateFormData?.({ scanType: e.target.value });
+                if (scanErrors.scanType) setScanErrors((prev) => ({ ...prev, scanType: '' }));
+              }}
+              className={`referral-unit-input referral-unit-select ${scanErrors.scanType ? 'is-error' : ''}`}
             >
+              <option value="">Select scan type</option>
               {SCAN_TYPES.map((st) => (
                 <option key={st} value={st}>
                   {st}
                 </option>
               ))}
             </select>
+            {scanErrors.scanType && (
+              <p className="resq-field-error-msg">
+                <AlertCircle size={12} />
+                <span>{scanErrors.scanType}</span>
+              </p>
+            )}
           </div>
 
           {/* Body Part SEARCHABLE DROPDOWN */}
           <div className="referral-input-unit">
             <SearchableSelect
-              label="Body Part (Dropdown)"
+              label="Body Part"
               labelClassName="referral-unit-label"
+              required
+              error={scanErrors.bodyPart}
               options={BODY_PARTS}
               value={bodyPart}
-              onChange={(val) => onUpdateFormData?.({ bodyPart: val })}
+              onChange={(val) => {
+                onUpdateFormData?.({ bodyPart: val });
+                if (scanErrors.bodyPart) setScanErrors((prev) => ({ ...prev, bodyPart: '' }));
+              }}
               placeholder="Search body part..."
             />
           </div>
 
           {/* Contrast Selection DROPDOWN */}
           <div className="referral-input-unit">
-            <label className="referral-unit-label">Contrast Protocol</label>
+            <label className="referral-unit-label">
+              Contrast Protocol <span style={{ color: '#EF4444' }}>*</span>
+            </label>
             <select
-              value={formData.contrastOption || 'Not Specified'}
-              onChange={(e) => onUpdateFormData?.({ contrastOption: e.target.value })}
-              className="referral-unit-input referral-unit-select"
+              value={contrastOption}
+              onChange={(e) => {
+                onUpdateFormData?.({ contrastOption: e.target.value });
+                if (scanErrors.contrastOption) setScanErrors((prev) => ({ ...prev, contrastOption: '' }));
+              }}
+              className={`referral-unit-input referral-unit-select ${scanErrors.contrastOption ? 'is-error' : ''}`}
             >
+              <option value="">Select contrast option</option>
               {CONTRAST_OPTIONS.map((co) => (
                 <option key={co} value={co}>
                   {co}
                 </option>
               ))}
             </select>
+            {scanErrors.contrastOption && (
+              <p className="resq-field-error-msg">
+                <AlertCircle size={12} />
+                <span>{scanErrors.contrastOption}</span>
+              </p>
+            )}
           </div>
 
           <div className="referral-input-unit">
@@ -540,13 +594,15 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
             title={`Click to view and preview ${documentName}`}
           >
             <div className="doc-pill-left">
-              <FileText size={18} className="review-doc-icon" />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span className="review-doc-name">{documentName}</span>
-                <span style={{ fontSize: '11.5px', color: '#64748B' }}>1.2 MB • Digitally Signed Requisition</span>
+              <div className="doc-icon-circle">
+                <FileText size={16} />
+              </div>
+              <div className="doc-meta-info">
+                <span className="doc-filename">{documentName}</span>
+                <span className="doc-file-desc">Official Medical Imaging Requisition Document</span>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="doc-pill-right">
               <span className="doc-verified-badge">Digital PDF</span>
               <span className="btn-preview-doc-chip">
                 <Eye size={12} />
@@ -572,7 +628,10 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
           <button
             type="button"
             className="btn-resq-back"
-            onClick={onProceed}
+            onClick={() => {
+              if (!validateScanDetails()) return;
+              onProceed();
+            }}
             title="Proceed to Step 3: Scan Location"
           >
             <span>Configure Routing (Step 3)</span>
@@ -582,6 +641,7 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
             type="button"
             className="btn-proceed-to-book-resq"
             onClick={() => {
+              if (!validateScanDetails()) return;
               if (onProceedToBooking) {
                 onProceedToBooking();
               } else {

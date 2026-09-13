@@ -58,6 +58,7 @@ import {
   apiGetPatients,
   apiUpdateProfile,
 } from '../services/api';
+import { scrollToTop } from '../utils/scrollHelper';
 
 interface ReferralDashboardProps {
   user: {
@@ -443,6 +444,11 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     display: 'Thu 20 February at 10:10 am',
   });
   const [isRequisitionModalOpen, setIsRequisitionModalOpen] = useState(false);
+
+  // Scroll to top whenever page view changes
+  useEffect(() => {
+    scrollToTop();
+  }, [dashboardView]);
   const [submittedReferralInfo, setSubmittedReferralInfo] = useState<{
     id: string;
     patientName: string;
@@ -598,6 +604,17 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
   // Profile Edit Modal State
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  // Scroll to top whenever a modal opens or changes steps
+  useEffect(() => {
+    scrollToTop();
+    const t1 = setTimeout(scrollToTop, 25);
+    const t2 = setTimeout(scrollToTop, 100);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [modalStep, isProfileModalOpen, isRequisitionModalOpen]);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileFormData, setProfileFormData] = useState({
     fullname: '',
@@ -989,13 +1006,6 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
         setScanErrors(errors);
         if (modalStep !== 'scan-details') {
           setModalStep('scan-details');
-        }
-        if (onAddToast) {
-          onAddToast(
-            'error',
-            'Incomplete Scan Details',
-            'Please select Scan Type, Body Part, and Contrast Option before proceeding.'
-          );
         }
         return;
       }
@@ -3603,13 +3613,6 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 }
                 if (Object.keys(errors).length > 0) {
                   setScanErrors(errors);
-                  if (onAddToast) {
-                    onAddToast(
-                      'error',
-                      'Incomplete Scan Details',
-                      'Please select Scan Type, Body Part, and Contrast Option before proceeding.'
-                    );
-                  }
                   return;
                 }
                 setScanErrors({});

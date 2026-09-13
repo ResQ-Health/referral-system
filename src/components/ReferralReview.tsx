@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileText,
   ArrowLeft,
@@ -21,6 +21,7 @@ import {
 import { SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
 import { SearchableSelect } from './SearchableSelect';
 import { RequisitionDocumentModal } from './RequisitionDocumentModal';
+import { scrollToTop } from '../utils/scrollHelper';
 
 interface ReferralReviewProps {
   formData: {
@@ -85,6 +86,11 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
     : rawDoctorName
   ).charAt(0).toUpperCase() || 'E';
   const [copiedLicense, setCopiedLicense] = useState(false);
+
+  // Always start at top of page on review screen mount
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   const handleCopyLicense = () => {
     if (navigator.clipboard) {

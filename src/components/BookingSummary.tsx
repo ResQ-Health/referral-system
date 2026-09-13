@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
-  AlertTriangle,
-  Star,
+  Calendar,
+  Building2,
+  User,
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
+  Star,
+  Activity,
 } from 'lucide-react';
 import type { Facility } from './FacilityMarketplace';
 import { SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
 import { SearchableSelect } from './SearchableSelect';
+import { scrollToTop } from '../utils/scrollHelper';
 
 interface BookingSummaryProps {
   user: {
@@ -62,6 +67,11 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
 
   const [scanErrors, setScanErrors] = useState<{ scanType?: string; bodyPart?: string; contrastOption?: string }>({});
 
+  // Ensure user always starts at the top of the booking summary page
+  useEffect(() => {
+    scrollToTop();
+  }, []);
+
   const handleSubmit = () => {
     const errors: { scanType?: string; bodyPart?: string; contrastOption?: string } = {};
     if (!referralData.scanType?.trim()) errors.scanType = 'Scan type is required to proceed';
@@ -79,7 +89,7 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
 
   return (
     <div className="booking-summary-layout">
-      {/* Redesigned Executive Top Header */}
+      {/* Executive Top Header Navbar */}
       <header className="marketplace-navbar">
         <div className="marketplace-nav-left">
           <button type="button" onClick={onBackToMarketplace} className="btn-back-clean" title="Back to Marketplace">
@@ -131,116 +141,185 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
         </div>
 
         <div className="marketplace-nav-right">
-          <div className="marketplace-clinician-badge">
-            <div className="clinician-avatar-badge">{doctorInitial}</div>
-            <div className="clinician-badge-meta">
-              <span className="clinician-badge-name">{doctorName}</span>
-              <span className="clinician-badge-role">{doctorSpecialty}</span>
+          <div className="marketplace-doctor-pill">
+            <div className="doctor-avatar-circle">{doctorInitial}</div>
+            <div className="doctor-pill-info">
+              <div className="doctor-pill-name-row">
+                <span className="doctor-pill-name">{doctorName}</span>
+                <span className="doctor-verified-dot" title="Authenticated Clinician" />
+              </div>
+              <span className="doctor-pill-specialty">{doctorSpecialty}</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="booking-summary-content">
-        <h2 className="booking-page-title">Booking Summary</h2>
+      {/* Main Content Container */}
+      <main className="booking-summary-content-wrapper">
+        {/* Executive Header Banner */}
+        <div className="booking-summary-header-banner">
+          <div className="booking-banner-top-row">
+            <button
+              type="button"
+              className="booking-nav-back-pill"
+              onClick={onBackToMarketplace}
+              title="Return to Step 2: Facility Marketplace"
+            >
+              <ArrowLeft size={13} />
+              <span>Back to Facilities</span>
+            </button>
 
-        <div className="booking-two-col-grid">
-          {/* Left Column: Facility Card & Patient Info */}
-          <div className="booking-left-col">
-            {/* Facility Card */}
-            <div className="booking-card">
-              <div className="facility-summary-header">
-                <div className="facility-sum-avatar">
-                  {facility.name.substring(0, 2).toUpperCase()}
+            <div className="booking-status-pill">
+              <CheckCircle2 size={13} className="text-emerald" />
+              <span>Step 3 of 3: Booking & Authorization</span>
+            </div>
+          </div>
+
+          <div className="booking-banner-title-block">
+            <h1 className="booking-summary-page-title">Booking Summary & Order Dispatch</h1>
+            <p className="booking-summary-page-subtitle">
+              Verify scheduled diagnostic appointment slot, clinical parameters, and referring clinician authorization before final dispatch.
+            </p>
+          </div>
+        </div>
+
+        {/* Structured 2-Column Responsive Grid */}
+        <div className="booking-summary-main-grid">
+          {/* Left Column: Facility Summary & Patient Card */}
+          <aside className="booking-summary-col-left">
+            {/* Facility & Appointment Card */}
+            <div className="booking-summary-card facility-card-redesigned">
+              <div className="booking-summary-card-header">
+                <div className="facility-avatar-box">
+                  <Building2 size={20} className="facility-avatar-icon" />
                 </div>
-                <div className="facility-sum-info">
-                  <h3 className="facility-sum-name">{facility.name}</h3>
-                  <p className="facility-sum-address">{facility.address}</p>
-                  <div className="facility-sum-rating-row">
-                    <Star size={13} className="star-filled" />
-                    <span className="rating-score">{facility.rating}</span>
-                    <span className="review-count">({facility.reviewsCount} reviews)</span>
-                  </div>
+                <div className="facility-title-info">
+                  <span className="facility-kicker">SELECTED DIAGNOSTIC CENTER</span>
+                  <h3 className="facility-name-heading">{facility.name}</h3>
+                  <p className="facility-address-text">{facility.address}</p>
                 </div>
               </div>
 
-              <div className="booking-detail-divider" />
-
-              <div className="booking-meta-list">
-                <div className="booking-meta-item">
-                  <span className="meta-label">Selected Date & Time</span>
-                  <span className="meta-value-highlight">{slot.display}</span>
+              <div className="facility-rating-badge-row">
+                <div className="rating-pill">
+                  <Star size={13} className="star-gold" />
+                  <span className="rating-num">{facility.rating}</span>
+                  <span className="reviews-num">({facility.reviewsCount} reviews)</span>
                 </div>
-                <div className="booking-meta-item">
-                  <span className="meta-label">Total Cost</span>
-                  <span className="meta-price-large">₦{facility.price.toLocaleString()}</span>
-                </div>
+                <span className="verified-facility-tag">
+                  <ShieldCheck size={12} />
+                  <span>Accredited Center</span>
+                </span>
               </div>
 
-              <button type="button" className="btn-edit-booking" onClick={onEditBooking} style={{ marginTop: '12px' }}>
-                Edit booking
+              <div className="booking-card-divider" />
+
+              {/* Slot & Appointment Schedule Banner */}
+              <div className="booking-slot-highlight-box">
+                <div className="slot-highlight-header">
+                  <Calendar size={15} className="slot-calendar-icon" />
+                  <span className="slot-header-label">CONFIRMED APPOINTMENT SLOT</span>
+                </div>
+                <p className="slot-display-value">{slot.display}</p>
+              </div>
+
+              {/* Pricing Line */}
+              <div className="booking-price-strip">
+                <span className="price-strip-label">Diagnostic Facility Fee</span>
+                <span className="price-strip-value">₦{facility.price.toLocaleString()}</span>
+              </div>
+
+              <button
+                type="button"
+                className="btn-change-booking-slot"
+                onClick={onEditBooking}
+                title="Change selected appointment slot or imaging facility"
+              >
+                <Calendar size={14} />
+                <span>Change Facility or Slot</span>
               </button>
             </div>
 
             {/* Patient Information Card */}
-            <div className="booking-card">
-              <h4 className="booking-card-label">Patient Information</h4>
-              <div className="booking-meta-list">
-                <div className="booking-meta-item">
-                  <span className="meta-label">Full Name</span>
-                  <span className="meta-value">{patientName}</span>
+            <div className="booking-summary-card patient-card-redesigned">
+              <div className="card-section-mini-header">
+                <div className="mini-icon-circle">
+                  <User size={15} />
                 </div>
-                <div className="booking-meta-item">
-                  <span className="meta-label">Referred By</span>
-                  <span className="meta-value">{doctorName}</span>
+                <div>
+                  <h4 className="card-section-mini-title">Patient Demographics</h4>
+                  <p className="card-section-mini-subtitle">Identity details bound to this diagnostic order</p>
+                </div>
+              </div>
+
+              <div className="patient-demographics-list">
+                <div className="demographic-row">
+                  <span className="demo-label">Full Name</span>
+                  <span className="demo-value font-semibold">{patientName}</span>
+                </div>
+                <div className="demographic-row">
+                  <span className="demo-label">Referred By</span>
+                  <span className="demo-value">{doctorName}</span>
+                </div>
+                <div className="demographic-row">
+                  <span className="demo-label">Routing Status</span>
+                  <span className="demo-value demo-badge-direct">Direct Facility Referral</span>
                 </div>
               </div>
             </div>
-          </div>
+          </aside>
 
-          {/* Right Column: Clinician, Scan Details (UNLOCKED), and Submit */}
-          <div className="booking-right-col">
+          {/* Right Column: Authorization, Scan Details, Notice, and Action Strip */}
+          <section className="booking-summary-col-right">
             {/* Card 1: Referring Clinician Authorization */}
-            <div className="referral-summary-card-executive clinician-auth-card-executive">
-              <div className="referral-card-section-header">
-                <div className="section-header-title-group">
-                  <div className="section-icon-badge">
-                    <ShieldCheck size={16} />
+            <div className="booking-summary-card clinician-auth-card-clean">
+              <div className="clinician-auth-card-top">
+                <div className="clinician-auth-title-group">
+                  <div className="auth-shield-badge">
+                    <ShieldCheck size={18} />
                   </div>
                   <div>
-                    <h3 className="referral-card-section-label">Referring Clinician Authorization</h3>
-                    <p className="referral-card-section-desc">Medical Council Credentials & Order Verification</p>
+                    <h3 className="auth-card-title">Referring Clinician Authorization</h3>
+                    <p className="auth-card-desc">Medical Council Credentials & Digital Requisition</p>
                   </div>
                 </div>
-                <div className="clinician-auth-status-pill">
+                <div className="auth-status-chip">
                   <CheckCircle2 size={13} />
                   <span>Authorized</span>
                 </div>
               </div>
 
-              <div className="clinician-profile-row-executive">
-                <div className="clinician-avatar-badge-lg">
-                  {doctorInitial}
-                </div>
-                <div className="clinician-profile-meta-main">
-                  <div className="clinician-name-badge-row">
-                    <h4 className="clinician-name-title">{doctorName}</h4>
-                    <span className="clinician-verified-tag">MDCN Registered</span>
+              <div className="clinician-meta-showcase">
+                <div className="clinician-avatar-circle-lg">{doctorInitial}</div>
+                <div className="clinician-text-details">
+                  <div className="clinician-name-row">
+                    <span className="clinician-main-name">{doctorName}</span>
+                    <span className="clinician-reg-pill">MDCN Validated</span>
                   </div>
-                  <p className="clinician-role-subtitle">{doctorSpecialty}</p>
+                  <span className="clinician-sub-specialty">{doctorSpecialty}</span>
                 </div>
               </div>
 
-              <div className="clinician-auth-footer-bar">
-                <CheckCircle2 size={12} className="text-emerald" />
-                <span>Digitally signed requisition order attached & authorized for facility dispatch</span>
+              <div className="clinician-auth-footer-notice">
+                <CheckCircle2 size={13} className="text-emerald" />
+                <span>Digitally signed requisition order attached & approved for PACS facility transfer</span>
               </div>
             </div>
 
-            {/* Card 2: Scan Details (UNLOCKED, NO LOCK ICONS!) */}
-            <div className="booking-card" id="booking-summary-scan-card">
-              <h4 className="booking-card-label">Scan Details</h4>
+            {/* Card 2: Scan Clinical Specifications */}
+            <div className="booking-summary-card scan-details-card-clean" id="booking-summary-scan-card">
+              <div className="scan-card-top-bar">
+                <div className="scan-card-title-group">
+                  <div className="scan-icon-circle">
+                    <Activity size={16} />
+                  </div>
+                  <div>
+                    <h3 className="scan-card-headline">Diagnostic Scan Specifications</h3>
+                    <p className="scan-card-subheadline">Editable parameters confirmed by the referring physician</p>
+                  </div>
+                </div>
+                <span className="scan-step-indicator">Required Parameters</span>
+              </div>
 
               {Object.keys(scanErrors).length > 0 && (
                 <div className="resq-scan-validation-alert">
@@ -249,10 +328,11 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
                 </div>
               )}
 
-              <div className="scan-details-grid-unlocked">
-                <div className="scan-field-group">
-                  <label className="scan-field-label">
-                    Scan Type <span style={{ color: '#EF4444' }}>*</span>
+              <div className="scan-inputs-responsive-grid">
+                {/* Scan Type */}
+                <div className="scan-input-group">
+                  <label className="scan-label-standard">
+                    Scan Type <span className="req-asterisk">*</span>
                   </label>
                   <select
                     value={referralData.scanType || ''}
@@ -260,7 +340,7 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
                       onUpdateReferralData({ ...referralData, scanType: e.target.value });
                       if (scanErrors.scanType) setScanErrors((prev) => ({ ...prev, scanType: '' }));
                     }}
-                    className={`scan-unlocked-input ${scanErrors.scanType ? 'is-error' : ''}`}
+                    className={`scan-select-standard ${scanErrors.scanType ? 'is-error' : ''}`}
                   >
                     <option value="">Select scan type</option>
                     {SCAN_TYPES.map((st) => (
@@ -277,10 +357,11 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
                   )}
                 </div>
 
-                <div className="scan-field-group">
+                {/* Body Part */}
+                <div className="scan-input-group">
                   <SearchableSelect
                     label="Body Part"
-                    labelClassName="scan-field-label"
+                    labelClassName="scan-label-standard"
                     required
                     error={scanErrors.bodyPart}
                     options={BODY_PARTS}
@@ -293,9 +374,10 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
                   />
                 </div>
 
-                <div className="scan-field-group">
-                  <label className="scan-field-label">
-                    Contrast Selection <span style={{ color: '#EF4444' }}>*</span>
+                {/* Contrast Selection */}
+                <div className="scan-input-group">
+                  <label className="scan-label-standard">
+                    Contrast Protocol <span className="req-asterisk">*</span>
                   </label>
                   <select
                     value={referralData.contrastOption || ''}
@@ -303,7 +385,7 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
                       onUpdateReferralData({ ...referralData, contrastOption: e.target.value });
                       if (scanErrors.contrastOption) setScanErrors((prev) => ({ ...prev, contrastOption: '' }));
                     }}
-                    className={`scan-unlocked-input ${scanErrors.contrastOption ? 'is-error' : ''}`}
+                    className={`scan-select-standard ${scanErrors.contrastOption ? 'is-error' : ''}`}
                   >
                     <option value="">Select contrast option</option>
                     {CONTRAST_OPTIONS.map((co) => (
@@ -321,48 +403,52 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
                 </div>
               </div>
 
-              <div className="scan-field-group" style={{ marginTop: '14px' }}>
-                <label className="scan-field-label">Clinical Note</label>
+              {/* Clinical Notes */}
+              <div className="scan-notes-group">
+                <label className="scan-label-standard">Clinical Indication & Special Instructions</label>
                 <textarea
                   value={referralData.clinicalNote}
                   onChange={(e) => onUpdateReferralData({ ...referralData, clinicalNote: e.target.value })}
-                  className="scan-unlocked-textarea"
+                  className="scan-textarea-standard"
                   rows={3}
-                  placeholder="Clinical notes..."
+                  placeholder="Provide pertinent clinical context, suspected diagnoses, or patient precautions..."
                 />
               </div>
             </div>
 
-            {/* Card 3: Important Notice */}
-            <div className="important-alert-card">
-              <div className="important-header-row">
-                <AlertTriangle size={16} className="important-alert-icon" />
-                <span className="important-title">Important</span>
+            {/* Card 3: Facility Clearance Pre-Authorization Notice */}
+            <div className="booking-clearance-notice-card">
+              <div className="notice-icon-box">
+                <AlertTriangle size={18} className="notice-icon" />
               </div>
-              <p className="important-text">
-                The clinic needs to give the "thumbs up" on your selected time before we process payment.
-                Keep an eye on your inbox—we'll let you know the moment you're cleared to pay.
-              </p>
+              <div className="notice-text-content">
+                <h4 className="notice-title">Diagnostic Center Appointment Clearance</h4>
+                <p className="notice-desc">
+                  The clinic reviews your selected slot to verify machine availability before billing. You will receive an instant notification as soon as the appointment is confirmed.
+                </p>
+              </div>
             </div>
 
-            {/* Bottom Action Row */}
-            <div className="booking-bottom-action-row">
-              <div className="bottom-cost-display">
-                <span>Total Cost:</span>
-                <strong>₦{facility.price.toLocaleString()}</strong>
+            {/* Bottom Action Strip */}
+            <div className="booking-summary-action-panel">
+              <div className="action-fee-breakdown">
+                <span className="action-fee-caption">Total Diagnostic Fee:</span>
+                <span className="action-fee-amount">₦{facility.price.toLocaleString()}</span>
               </div>
 
               <button
                 type="button"
-                className="btn-submit-referral-blue"
+                className="btn-submit-booking-order"
                 onClick={handleSubmit}
+                title="Submit referral order and dispatch to selected imaging center"
               >
-                Submit Referral
+                <CheckCircle2 size={16} />
+                <span>Submit Referral & Confirm Booking</span>
               </button>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

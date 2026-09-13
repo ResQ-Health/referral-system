@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Star,
   ChevronLeft,
@@ -30,6 +30,7 @@ import {
   CheckCheck,
 } from 'lucide-react';
 import { RequisitionDocumentModal } from './RequisitionDocumentModal';
+import { scrollToTop } from '../utils/scrollHelper';
 
 export interface Facility {
   id: string;
@@ -257,6 +258,11 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
   const [isRequisitionModalOpen, setIsRequisitionModalOpen] = useState(false);
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
 
+  // Active sub-tab in top navbar: 'referral' (Referral Summary) vs 'marketplace' (Select a provider)
+  const [activeMarketTab, setActiveMarketTab] = useState<'referral' | 'marketplace'>('referral');
+  const [providerName, setProviderName] = useState('Phoebe Medical Center');
+  const [estimatedPriceText, setEstimatedPriceText] = useState('₦30,000.00 - ₦35,000.00');
+
   // Dynamic Date & Time State
   const now = useMemo(() => new Date(), []);
   const todayStart = useMemo(
@@ -278,10 +284,24 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
 
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('10:00 AM');
 
-  // Active sub-tab in top navbar: 'referral' (Referral Summary) vs 'marketplace' (Select a provider)
-  const [activeMarketTab, setActiveMarketTab] = useState<'referral' | 'marketplace'>('referral');
-  const [providerName, setProviderName] = useState('Phoebe Medical Center');
-  const [estimatedPriceText, setEstimatedPriceText] = useState('₦30,000.00 - ₦35,000.00');
+  // Always reset scroll to top on marketplace mount
+  useEffect(() => {
+    scrollToTop();
+  }, []);
+
+  // Reset scroll to top when switching between Summary and Marketplace subtabs
+  useEffect(() => {
+    scrollToTop();
+  }, [activeMarketTab]);
+
+  // Reset scroll to top when modals/drawers open
+  useEffect(() => {
+    if (isSlotModalOpen || isRequisitionModalOpen || isMobileSummaryOpen) {
+      scrollToTop();
+      const t = setTimeout(scrollToTop, 40);
+      return () => clearTimeout(t);
+    }
+  }, [isSlotModalOpen, isRequisitionModalOpen, isMobileSummaryOpen]);
 
   // Filter states
   const [scanFilter, setScanFilter] = useState('');

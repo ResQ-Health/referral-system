@@ -18,6 +18,7 @@ import {
   apiLogin,
   apiGoogleSync,
 } from './services/api';
+import { scrollToTop } from './utils/scrollHelper';
 
 export type ActiveScreen = 'signin' | 'registration' | 'verification' | 'dashboard' | 'patient-checkout';
 
@@ -48,6 +49,11 @@ export function App() {
     }
     return 'signin';
   });
+
+  // Always reset scroll to top when switching major screens
+  useEffect(() => {
+    scrollToTop();
+  }, [currentScreen]);
 
   const [userEmail, setUserEmail] = useState<string>('');
   const [userData, setUserData] = useState<{

@@ -55,22 +55,54 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
 
   return (
     <div className="booking-summary-layout">
-      {/* Top Navbar */}
+      {/* Redesigned Executive Top Header */}
       <header className="marketplace-navbar">
         <div className="marketplace-nav-left">
-          <button type="button" onClick={onBackToMarketplace} className="btn-back-clean" title="Back">
-            <ArrowLeft size={18} />
+          <button type="button" onClick={onBackToMarketplace} className="btn-back-clean" title="Back to Marketplace">
+            <ArrowLeft size={16} />
           </button>
-          <img src="/logo.png" alt="RESQ" className="resq-sidebar-logo" />
+          <div
+            className="marketplace-brand-wrap"
+            onClick={onBackToMarketplace}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <img src="/logo.png" alt="ResQ" className="resq-sidebar-logo" />
+            <span className="resq-brand-text-lg">ResQ</span>
+          </div>
+          <div className="marketplace-nav-divider-v" />
+          <span className="marketplace-flow-badge">Clinical Referral</span>
         </div>
 
         <div className="marketplace-nav-center">
-          <button type="button" className="market-nav-tab" onClick={onBackToMarketplace}>
-            <span>Referral</span>
-          </button>
-          <button type="button" className="market-nav-tab active">
-            <span>Marketplace</span>
-          </button>
+          <nav className="marketplace-stepper-pills">
+            <button
+              type="button"
+              className="market-nav-step-pill completed"
+              onClick={onBackToMarketplace}
+              title="Return to Referral Summary"
+            >
+              <span className="step-pill-number">1</span>
+              <span className="step-pill-text">Summary</span>
+            </button>
+            <div className="market-stepper-line completed" />
+            <button
+              type="button"
+              className="market-nav-step-pill completed"
+              onClick={onBackToMarketplace}
+              title="Return to Diagnostic Provider Selection"
+            >
+              <span className="step-pill-number">2</span>
+              <span className="step-pill-text">Provider</span>
+            </button>
+            <div className="market-stepper-line active" />
+            <button
+              type="button"
+              className="market-nav-step-pill active"
+            >
+              <span className="step-pill-number">3</span>
+              <span className="step-pill-text">Booking Summary</span>
+            </button>
+          </nav>
         </div>
 
         <div className="marketplace-nav-right">
@@ -78,26 +110,31 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
             <div className="doctor-avatar-circle">
               {doctorInitial}
             </div>
-            <span className="doctor-pill-name">{doctorName}</span>
+            <div className="doctor-pill-info">
+              <div className="doctor-pill-name-row">
+                <span className="doctor-pill-name">{doctorName}</span>
+                <span className="doctor-verified-dot" title="Authenticated Clinician" />
+              </div>
+              <span className="doctor-pill-specialty">{doctorSpecialty}</span>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Sub-Header: Breadcrumbs & Emergency Alert */}
+      {/* Sub-Header: Professional Clinical Route Breadcrumbs */}
       <div className="summary-breadcrumb-bar">
         <div className="breadcrumb-left">
           <button type="button" className="btn-back-link" onClick={onBackToMarketplace}>
-            <ArrowLeft size={16} />
-            <span>Back</span>
+            <ArrowLeft size={15} />
+            <span>Back to Provider Selection</span>
           </button>
-          <span className="breadcrumb-item active">Booking Summary</span>
-          <span className="breadcrumb-separator">&gt;</span>
-          <span className="breadcrumb-item muted">Payment</span>
+          <span className="breadcrumb-separator">/</span>
+          <span className="breadcrumb-item active">Order Summary & Appointment Hold</span>
         </div>
 
-        <div className="emergency-alert-tag">
-          <AlertTriangle size={15} className="emergency-icon" />
-          <span>Is this an emergency?</span>
+        <div className="clinical-clearance-badge">
+          <span className="clearance-dot" />
+          <span>Slot Reserved • Pending Center Clearance</span>
         </div>
       </div>
 

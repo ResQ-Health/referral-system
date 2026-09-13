@@ -2927,7 +2927,7 @@
 }
 
 .marketplace-navbar {
-  height: 68px;
+  height: 64px;
   background-color: #FFFFFF;
   border-bottom: 1px solid #E2E8F0;
   display: flex;
@@ -2937,16 +2937,42 @@
   position: sticky;
   top: 0;
   z-index: 50;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 
 .marketplace-nav-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+}
+
+.marketplace-brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  user-select: none;
+}
+
+.marketplace-nav-divider-v {
+  width: 1px;
+  height: 20px;
+  background-color: #E2E8F0;
+}
+
+.marketplace-flow-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0F766E;
+  background-color: #F0FDFA;
+  border: 1px solid #CCFBF1;
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
 }
 
 .btn-back-clean {
-  background: none;
+  background: #F8FAFC;
   border: 1px solid #E2E8F0;
   border-radius: 8px;
   width: 34px;
@@ -2961,45 +2987,91 @@
 
 .btn-back-clean:hover {
   background-color: #F1F5F9;
-  color: #06202E;
+  color: #0F172A;
+  border-color: #CBD5E1;
 }
 
+/* Executive 3-Step Stepper in Center */
 .marketplace-nav-center {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.market-nav-tab {
-  background: none;
+.marketplace-stepper-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #F8FAFC;
+  padding: 4px 6px;
+  border-radius: 999px;
+  border: 1px solid #E2E8F0;
+}
+
+.market-nav-step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
   border: none;
-  padding: 8px 18px;
-  font-size: 14px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #64748B;
   cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.15s ease;
-  position: relative;
+  transition: all 0.18s ease;
 }
 
-.market-nav-tab:hover {
-  color: #06202E;
+.market-nav-step-pill:hover {
+  color: #0F172A;
 }
 
-.market-nav-tab.active {
-  color: #06202E;
+.market-nav-step-pill.active {
+  background-color: #FFFFFF;
+  color: #0D9488;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
 }
 
-.market-nav-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -16px;
-  left: 10%;
-  width: 80%;
-  height: 2.5px;
-  background-color: #06202E;
-  border-radius: 2px;
+.market-nav-step-pill.completed {
+  color: #0F766E;
+}
+
+.step-pill-number {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #E2E8F0;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.18s ease;
+}
+
+.market-nav-step-pill.active .step-pill-number {
+  background-color: #0D9488;
+  color: #FFFFFF;
+}
+
+.market-nav-step-pill.completed .step-pill-number {
+  background-color: #CCFBF1;
+  color: #0F766E;
+}
+
+.market-stepper-line {
+  width: 16px;
+  height: 2px;
+  background-color: #E2E8F0;
+  border-radius: 1px;
+}
+
+.market-stepper-line.active,
+.market-stepper-line.completed {
+  background-color: #0D9488;
 }
 
 .marketplace-nav-right {
@@ -3012,28 +3084,128 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: #F1F5F9;
-  padding: 6px 14px 6px 8px;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 5px 14px 5px 6px;
   border-radius: 9999px;
 }
 
 .doctor-avatar-circle {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #06202E, #1E3A8A);
+  background: linear-gradient(135deg, #06202E, #0D9488);
   color: #FFFFFF;
   font-size: 12px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.doctor-pill-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.doctor-pill-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .doctor-pill-name {
-  font-size: 13.5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.doctor-verified-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+}
+
+.doctor-pill-specialty {
+  font-size: 11px;
+  color: #64748B;
+}
+
+/* Clinical Clearance Badge in Sub-header */
+.clinical-clearance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background-color: #F0FDFA;
+  border: 1px solid #CCFBF1;
+  color: #0F766E;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 600;
-  color: #06202E;
+}
+
+.clearance-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+}
+
+/* Mobile Quickbar for Marketplace Order Summary */
+.marketplace-mobile-quickbar {
+  display: none;
+  margin-bottom: 14px;
+}
+
+.btn-mobile-toggle-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 4px solid #0D9488;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: #0F172A;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  text-align: left;
+}
+
+.mobile-summary-pill-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0D9488;
+  background-color: #F0FDFA;
+  border: 1px solid #CCFBF1;
+  padding: 3px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.btn-sidebar-close-mobile {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.btn-sidebar-close-mobile:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+.marketplace-mobile-backdrop {
+  display: none;
 }
 
 /* Marketplace Body (Sidebar + Content) */
@@ -4942,18 +5114,19 @@
    Authentic Clinical Requisition Document Preview Modal
    ========================================================================== */
 .requisition-doc-modal-card {
-  max-width: 1080px !important;
-  width: 96% !important;
-  height: 94vh !important;
-  max-height: 95vh !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
   display: flex;
   flex-direction: column;
   padding: 0 !important;
-  border-radius: 16px;
+  border-radius: 0 !important;
   overflow: hidden;
-  background-color: #071724 !important;
-  box-shadow: 0 25px 70px -15px rgba(6, 32, 46, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: #334155 !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .req-modal-top-bar {
@@ -5761,8 +5934,19 @@
   font-size: 11.5px;
 }
 
-/* Print Optimization for 2-Page Clinical Package */
+/* Print Optimization for 2-Page Clinical Package (Preserves Laptop A4 Format) */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+  html, body {
+    width: 210mm !important;
+    height: auto !important;
+    background: #FFFFFF !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
   body * {
     visibility: hidden !important;
   }
@@ -5774,10 +5958,13 @@
     padding: 0 !important;
     background: #FFFFFF !important;
     display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   .pdf-page-wrapper {
     max-width: 100% !important;
     width: 100% !important;
+    margin: 0 !important;
   }
   .pdf-page-indicator-pill,
   .pdf-scroll-indicator,
@@ -5789,10 +5976,11 @@
   .req-paper-sheet {
     box-shadow: none !important;
     border: none !important;
-    padding: 24px 30px !important;
+    padding: 20px 24px !important;
     width: 100% !important;
     max-width: 100% !important;
-    min-height: auto !important;
+    min-height: 270mm !important;
+    page-break-inside: avoid !important;
   }
   .req-page-1-sheet {
     page-break-after: always !important;
@@ -6185,137 +6373,134 @@
    Multiple Saved Drafts List & Search Styles
    ========================================================================== */
 
-/* Compact Saved Drafts Banner in Referral Type Modal */
-.saved-drafts-compact-banner {
-  background: linear-gradient(135deg, #F0FDF4 0%, #F8FAFC 100%);
-  border: 1px solid #BBF7D0;
+/* Sleek, Non-Clumsy Saved Drafts Bar in Referral Type Modal */
+.saved-drafts-sleek-bar {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 4px solid #0D9488;
   border-radius: 12px;
-  padding: 13px 16px;
-  margin-bottom: 10px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 
-.drafts-banner-left {
+.drafts-sleek-left {
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
 }
 
-.drafts-banner-icon-box {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background-color: #DCFCE7;
-  color: #15803D;
+.drafts-sleek-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: #F0FDFA;
+  color: #0D9488;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.drafts-banner-title-row {
+.drafts-sleek-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.drafts-sleek-title-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.drafts-banner-title {
-  font-size: 14px;
+.drafts-sleek-title {
+  font-size: 13.5px;
   font-weight: 700;
-  color: #06202E;
+  color: #0F172A;
 }
 
-.drafts-banner-subtitle {
-  margin: 2px 0 0;
+.drafts-sleek-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0F766E;
+  background-color: #CCFBF1;
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.drafts-sleek-recent {
   font-size: 12px;
   color: #64748B;
-}
-
-.btn-show-all-drafts-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #06202E;
-  color: #FFFFFF;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 3px rgba(6, 32, 46, 0.12);
-}
-
-.btn-show-all-drafts-cta:hover {
-  background-color: #0A7E64;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(10, 126, 100, 0.2);
-}
-
-/* Most Recent Draft Quick-Resume Chip */
-.recent-draft-quick-chip {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
-}
-
-.quick-chip-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #475569;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.quick-chip-label {
-  color: #94A3B8;
-  font-weight: 500;
+.drafts-sleek-recent strong {
+  color: #1E293B;
 }
 
-.quick-chip-name {
-  font-weight: 700;
-  color: #06202E;
+.drafts-sleek-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.quick-chip-scan {
-  color: #0A7E64;
-  font-weight: 600;
-}
-
-.quick-chip-time {
-  color: #64748B;
-}
-
-.btn-quick-resume {
-  background: none;
+.btn-drafts-resume-pill {
+  background-color: #0D9488;
+  color: #FFFFFF;
   border: none;
-  color: #0A7E64;
-  font-weight: 700;
+  border-radius: 6px;
+  padding: 6px 12px;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-  white-space: nowrap;
+  transition: background-color 0.15s ease;
 }
 
-.btn-quick-resume:hover {
-  background-color: #E6F5F1;
-  text-decoration: underline;
+.btn-drafts-resume-pill:hover {
+  background-color: #0F766E;
+}
+
+.btn-drafts-view-all-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #F8FAFC;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-drafts-view-all-pill:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+
+@media (max-width: 640px) {
+  .saved-drafts-sleek-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .drafts-sleek-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 
 /* Saved Drafts Option Card in Grid */
@@ -8531,43 +8716,55 @@
     white-space: nowrap;
   }
 
-  /* Ultra-Compact Metrics Ribbon on Mobile (Single-Row, Saves >70% vertical space) */
+  /* Clean 2-Column Grid for Metrics on Mobile */
   .referrals-metrics-strip {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background-color: #FFFFFF;
+    grid-template-columns: repeat(2, 1fr);
+    background-color: #E2E8F0;
+    gap: 1px;
     border: 1px solid #E2E8F0;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     overflow: hidden;
   }
 
+  .referrals-metrics-strip .metric-strip-divider {
+    display: none;
+  }
+
   .metric-segment {
-    flex-direction: column;
+    display: flex;
+    flex-direction: row;
     align-items: center;
-    justify-content: center;
-    gap: 3px;
-    padding: 8px 4px 9px;
-    text-align: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    text-align: left;
     min-width: 0;
+    background-color: #FFFFFF;
+  }
+
+  .metric-segment.active {
+    background-color: #F0FDFA;
   }
 
   .metric-segment.active::after {
-    left: 4px;
-    right: 4px;
-    height: 2px;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    height: 2.5px;
   }
 
   .metric-seg-label-group {
     display: flex;
     align-items: center;
-    gap: 4px;
-    justify-content: center;
+    gap: 6px;
+    justify-content: flex-start;
   }
 
   .metric-seg-label {
-    font-size: 10px;
+    font-size: 11.5px;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -8575,14 +8772,15 @@
   }
 
   .metric-seg-val {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
     line-height: 1;
+    color: #0F172A;
   }
 
   .metric-seg-dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
   }
 
   /* Mobile Search & Filter Panel */
@@ -8907,19 +9105,95 @@
     font-weight: 500;
   }
 
-  /* Facility Marketplace & Booking Summary */
+  /* Facility Marketplace & Booking Summary Mobile Responsive */
   .marketplace-navbar {
-    padding: 0 16px;
+    padding: 0 14px;
     height: 56px;
   }
 
-  .marketplace-doctor-pill .doctor-pill-name {
+  .marketplace-flow-badge,
+  .marketplace-nav-divider-v {
+    display: none;
+  }
+
+  .marketplace-brand-wrap .resq-brand-text-lg {
+    font-size: 16px;
+  }
+
+  .market-nav-step-pill {
+    padding: 4px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .step-pill-number {
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+  }
+
+  .market-stepper-line {
+    width: 8px;
+  }
+
+  .marketplace-doctor-pill .doctor-pill-info {
     display: none;
   }
 
   .marketplace-doctor-pill {
-    padding: 4px;
+    padding: 3px;
     border-radius: 50%;
+  }
+
+  /* Mobile Slide-Over Sidebar for Marketplace */
+  .marketplace-mobile-quickbar {
+    display: block;
+  }
+
+  .marketplace-mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(6, 32, 46, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 998;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .btn-sidebar-close-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .referral-summary-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 86%;
+    max-width: 340px;
+    background-color: #FFFFFF;
+    z-index: 999;
+    padding: 20px 18px 40px;
+    box-shadow: 0 20px 50px rgba(6, 32, 46, 0.3);
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+  }
+
+  .referral-summary-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .marketplace-content {
+    width: 100%;
+    padding: 14px 14px 60px;
+  }
+
+  .facility-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .summary-breadcrumb-bar {
@@ -8927,10 +9201,6 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
-  }
-
-  .emergency-alert-tag {
-    align-self: flex-start;
   }
 
   .booking-summary-content {

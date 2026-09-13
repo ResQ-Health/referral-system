@@ -148,57 +148,8 @@ export const RequisitionDocumentModal: React.FC<RequisitionDocumentModalProps> =
   };
 
   const handleDownload = () => {
-    const content = `=======================================================\n` +
-      `       RESQ HEALTHCARE DIAGNOSTIC NETWORK\n` +
-      `    OFFICIAL 2-PAGE CLINICAL REQUISITION PACKAGE\n` +
-      `=======================================================\n` +
-      `Order Ref: ${orderId} | Accession: ${accessionNo}\n` +
-      `Order Date: ${orderDate} | Priority: ROUTINE / CLINICAL\n\n` +
-      `--- PAGE 1: REQUISITION & EXAMINATION PROTOCOL ---\n` +
-      `1. PATIENT DEMOGRAPHICS:\n` +
-      `   Name:     ${patientName}\n` +
-      `   MRN:      PT-99420-RESQ\n` +
-      `   DOB:      ${patientDob} (${patientGender})\n` +
-      `   Phone:    ${patientPhone}\n` +
-      `   Email:    ${patientEmail}\n` +
-      `   Address:  ${patientAddress}\n\n` +
-      `2. ORDERING PHYSICIAN:\n` +
-      `   Name:     ${clinicianName}\n` +
-      `   Specialty:${clinicianSpecialty}\n` +
-      `   License:  ${clinicianLicense}\n` +
-      `   Facility: ${referringFacility}\n\n` +
-      `3. EXAMINATION PROTOCOL:\n` +
-      `   Modality:    ${scanType}\n` +
-      `   Body Part:   ${bodyPart}\n` +
-      `   Destination: ${preferredCenter}\n` +
-      `   Contrast:    ${referralData.contrastOption || 'Not Specified'}\n\n` +
-      `4. CLINICAL INDICATION:\n` +
-      `   ${clinicalNote}\n\n` +
-      `--- PAGE 2: SAFETY CLEARANCE & DIGITAL AUTHORIZATION ---\n` +
-      `5. PRE-PROCEDURE SAFETY SCREENING:\n` +
-      `   - Cardiac Pacemaker / ICD: None / Cleared\n` +
-      `   - Aneurysm Clips / Coils: None / Cleared\n` +
-      `   - Metallic Foreign Bodies: Negative / Cleared\n` +
-      `   - Renal Clearance (eGFR > 60 mL/min): Documented / Cleared\n` +
-      `   - Contrast Allergy History: Negative / Non-allergic\n` +
-      `   - Pregnancy Status: Negative / Not Applicable\n` +
-      `   - Informed Patient Consent: Documented in Clinical File\n\n` +
-      `6. CLINICAL AUTHORIZATION & STAMP:\n` +
-      `   Signed By: ${clinicianName}\n` +
-      `   ResQ Medical Board Stamp: OFFICIALLY AUDITED & CERTIFIED\n` +
-      `   Security Hash: 8F4A-99B2-C104-E58F\n` +
-      `   Verification URL: https://resq.health/verify/${orderId}\n` +
-      `=======================================================`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName.replace('.pdf', '') + '_2Page_Package.txt';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Triggers native browser PDF generation preserving laptop desktop A4 format
+    window.print();
   };
 
   const handleCopyPayload = () => {

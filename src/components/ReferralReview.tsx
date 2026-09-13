@@ -71,6 +71,10 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
   const clinicianSpecialty = user?.specialty?.trim() || 'Consultant Specialist';
   const clinicianLicense = user?.licenseNumber?.trim() || 'MDCN-REG-847291';
   const clinicianFacility = user?.practiceName?.trim() || 'ResQ Medical Center';
+  const doctorInitial = (rawDoctorName.toLowerCase().startsWith('dr.')
+    ? rawDoctorName.substring(3).trim()
+    : rawDoctorName
+  ).charAt(0).toUpperCase() || 'E';
 
   const scanType = formData.scanType || 'MRI';
   const bodyPart = formData.bodyPart || 'Brain MRI';
@@ -81,43 +85,95 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
   const [isPreviewDocOpen, setIsPreviewDocOpen] = useState(false);
 
   return (
-    <div className="referral-page-summary-wrapper" style={{ maxWidth: '860px', margin: '24px auto' }}>
-      {/* Executive Header Banner */}
-      <div className="referral-summary-header-banner">
-        <div className="summary-banner-top-row">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <div className="referral-review-layout">
+      {/* Redesigned Executive Top Header */}
+      <header className="marketplace-navbar">
+        <div className="marketplace-nav-left">
+          <button
+            type="button"
+            onClick={onBackToDashboard || onEditScanDetails}
+            className="btn-back-clean"
+            title="Exit to Referrals Dashboard"
+          >
+            <ArrowLeft size={16} />
+          </button>
+          <div
+            className="marketplace-brand-wrap"
+            onClick={onBackToDashboard}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <img src="/logo.png" alt="ResQ" className="resq-sidebar-logo" />
+            <span className="resq-brand-text-lg">ResQ</span>
+          </div>
+          <div className="marketplace-nav-divider-v" />
+          <span className="marketplace-flow-badge">Clinical Referral</span>
+        </div>
+
+        <div className="marketplace-nav-center">
+          <nav className="marketplace-stepper-pills">
             <button
               type="button"
-              className="modal-nav-back-pill"
-              onClick={onBackToDashboard || onEditScanDetails}
-              title="Back to Referrals Dashboard"
+              className="market-nav-step-pill active"
             >
-              <ArrowLeft size={14} />
-              <span>Back to Dashboard</span>
+              <span className="step-pill-number">1</span>
+              <span className="step-pill-text">Referral Summary</span>
             </button>
+            <div className="market-stepper-line" />
+            <button
+              type="button"
+              className="market-nav-step-pill"
+              onClick={onProceedToBooking || onProceed}
+              title="Proceed to Provider Selection"
+            >
+              <span className="step-pill-number">2</span>
+              <span className="step-pill-text">Select Provider</span>
+            </button>
+          </nav>
+        </div>
+
+        <div className="marketplace-nav-right">
+          <div className="marketplace-doctor-pill">
+            <div className="doctor-avatar-circle">
+              {doctorInitial}
+            </div>
+            <div className="doctor-pill-info">
+              <div className="doctor-pill-name-row">
+                <span className="doctor-pill-name">{clinicianName}</span>
+                <span className="doctor-verified-dot" title="Authenticated Clinician" />
+              </div>
+              <span className="doctor-pill-specialty">{clinicianSpecialty}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="referral-page-summary-wrapper" style={{ maxWidth: '860px', margin: '24px auto' }}>
+        {/* Executive Header Banner */}
+        <div className="referral-summary-header-banner">
+          <div className="summary-banner-top-row">
             <button
               type="button"
               className="modal-nav-back-pill"
               onClick={onEditScanDetails}
-              title="Back to Step 2: Scan Details"
+              title="Return to Step 2: Scan Details"
             >
-              <span>Back to Step 2</span>
+              <ArrowLeft size={13} />
+              <span>Back to Scan Details</span>
             </button>
+
+            <div className="summary-status-pill">
+              <CheckCircle2 size={13} className="text-emerald" />
+              <span>Review & Clinical Verification</span>
+            </div>
           </div>
 
-          <div className="summary-status-pill">
-            <CheckCircle2 size={13} className="text-emerald" />
-            <span>Review & Routing Verification</span>
+          <div className="summary-banner-title-block">
+            <h1 className="referral-page-summary-title">Referral Summary & Clinical Review</h1>
+            <p className="referral-page-summary-subtitle">
+              Verify all clinical parameters before routing to an accredited imaging center or issuing patient self-scheduling.
+            </p>
           </div>
         </div>
-
-        <div className="summary-banner-title-block">
-          <h1 className="referral-page-summary-title">Referral Summary & Clinical Review</h1>
-          <p className="referral-page-summary-subtitle">
-            Verify all clinical parameters before routing to an accredited imaging center or issuing patient self-scheduling.
-          </p>
-        </div>
-      </div>
 
       {/* 1. PERSONAL INFORMATION SECTION */}
       <div className="referral-summary-card-executive">
@@ -453,6 +509,7 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
         }}
         fileName={documentName}
       />
+      </div>
     </div>
   );
 };

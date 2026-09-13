@@ -2329,77 +2329,48 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
               </button>
             </div>
 
-            {/* SAVED DRAFTS BANNER (Clean, high-visibility, 1-click 'Click to show all drafts') */}
+            {/* Single Sleek, Non-Clumsy Saved Drafts Bar */}
             {savedDrafts.length > 0 && (
-              <div className="saved-drafts-compact-banner">
-                <div className="drafts-banner-left">
-                  <div className="drafts-banner-icon-box">
-                    <FolderClock size={20} />
+              <div className="saved-drafts-sleek-bar">
+                <div className="drafts-sleek-left">
+                  <div className="drafts-sleek-icon">
+                    <FolderClock size={16} />
                   </div>
-                  <div>
-                    <div className="drafts-banner-title-row">
-                      <span className="drafts-banner-title">Saved Referral Drafts</span>
-                      <span className="drafts-count-badge">{savedDrafts.length} saved</span>
+                  <div className="drafts-sleek-info">
+                    <div className="drafts-sleek-title-row">
+                      <span className="drafts-sleek-title">Saved Referral Drafts</span>
+                      <span className="drafts-sleek-badge">{savedDrafts.length} saved</span>
                     </div>
-                    <p className="drafts-banner-subtitle">
-                      You have {savedDrafts.length} unfinished referral draft{savedDrafts.length > 1 ? 's' : ''}.
-                    </p>
+                    <span className="drafts-sleek-recent">
+                      Recent: <strong>{savedDrafts[0].formData.fullName || 'Unnamed Patient'}</strong> • {savedDrafts[0].formData.scanType || 'Scan order'} ({savedDrafts[0].savedAtDisplay})
+                    </span>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  className="btn-show-all-drafts-cta"
-                  onClick={() => setModalStep('choose-draft')}
-                  title="Click to show all drafts and select who you want"
-                >
-                  <span>Click to show all drafts ({savedDrafts.length})</span>
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            )}
-
-            {/* MOST RECENT DRAFT QUICK-RESUME CHIP */}
-            {savedDrafts.length > 0 && (
-              <div className="recent-draft-quick-chip">
-                <div className="quick-chip-left">
-                  <span className="quick-chip-label">Most recent:</span>
-                  <span className="quick-chip-name">{savedDrafts[0].formData.fullName || 'Unnamed Patient'}</span>
-                  <span className="quick-chip-scan">({savedDrafts[0].formData.scanType || 'Scan in progress'})</span>
-                  <span className="quick-chip-time">• {savedDrafts[0].savedAtDisplay}</span>
-                </div>
-                <div className="quick-chip-actions">
+                <div className="drafts-sleek-actions">
                   <button
                     type="button"
-                    className="btn-quick-resume"
+                    className="btn-drafts-resume-pill"
                     onClick={() => handleResumeDraft(savedDrafts[0])}
                     title="Quick resume most recent draft"
                   >
-                    Resume →
+                    Resume
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-drafts-view-all-pill"
+                    onClick={() => setModalStep('choose-draft')}
+                    title="View and select from all saved drafts"
+                  >
+                    <span>Show all ({savedDrafts.length})</span>
+                    <ArrowRight size={13} />
                   </button>
                 </div>
               </div>
             )}
 
             <div className="referral-type-modal-container">
-              {/* Option 1: Saved Drafts */}
-              {savedDrafts.length > 0 && (
-                <button
-                  type="button"
-                  className="referral-type-option option-saved-drafts"
-                  onClick={() => setModalStep('choose-draft')}
-                >
-                  <div className="type-title-row">
-                    <h4 className="type-title">Saved Drafts</h4>
-                    <span className="type-badge-count">{savedDrafts.length}</span>
-                  </div>
-                  <p className="type-desc">
-                    Click to show all saved drafts and select who you want to resume.
-                  </p>
-                </button>
-              )}
-
-              {/* Option 2: Existing Patient */}
+              {/* Option 1: Existing Patient */}
               <button
                 type="button"
                 className="referral-type-option option-existing"
@@ -2411,7 +2382,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 </p>
               </button>
 
-              {/* Option 3: New Patient */}
+              {/* Option 2: New Patient */}
               <button
                 type="button"
                 className="referral-type-option option-new"

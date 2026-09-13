@@ -142,7 +142,7 @@ export const SAMPLE_FACILITIES: Facility[] = [
     reviewsCount: 48,
     price: 35000,
     slotsAvailable: 6,
-    image: '/phoebe_center.jpg',
+    image: '/st_nicholas_center.jpg',
   },
   {
     id: 'fac-3',
@@ -152,7 +152,7 @@ export const SAMPLE_FACILITIES: Facility[] = [
     reviewsCount: 82,
     price: 29500,
     slotsAvailable: 5,
-    image: '/phoebe_center.jpg',
+    image: '/clinix_center.jpg',
   },
   {
     id: 'fac-4',
@@ -162,7 +162,7 @@ export const SAMPLE_FACILITIES: Facility[] = [
     reviewsCount: 114,
     price: 38000,
     slotsAvailable: 3,
-    image: '/phoebe_center.jpg',
+    image: '/st_nicholas_center.jpg',
   },
   {
     id: 'fac-5',
@@ -172,7 +172,7 @@ export const SAMPLE_FACILITIES: Facility[] = [
     reviewsCount: 73,
     price: 31000,
     slotsAvailable: 7,
-    image: '/phoebe_center.jpg',
+    image: '/clinix_center.jpg',
   },
   {
     id: 'fac-6',
@@ -249,6 +249,7 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(SAMPLE_FACILITIES[0]);
   const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
   const [isRequisitionModalOpen, setIsRequisitionModalOpen] = useState(false);
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
 
   // Dynamic Date & Time State
   const now = useMemo(() => new Date(), []);
@@ -500,7 +501,7 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
 
   return (
     <div className="marketplace-layout">
-      {/* Top Navbar */}
+      {/* Redesigned Executive Top Header */}
       <header className="marketplace-navbar">
         <div className="marketplace-nav-left">
           <button
@@ -515,31 +516,43 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
             className="btn-back-clean"
             title={activeMarketTab === 'marketplace' ? 'Back to Referral Summary' : 'Back to Dashboard'}
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </button>
-          <img src="/logo.png" alt="RESQ" className="resq-sidebar-logo" />
+          <div
+            className="marketplace-brand-wrap"
+            onClick={onBackToDashboard}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <img src="/logo.png" alt="ResQ" className="resq-sidebar-logo" />
+            <span className="resq-brand-text-lg">ResQ</span>
+          </div>
+          <div className="marketplace-nav-divider-v" />
+          <span className="marketplace-flow-badge">Clinical Referral</span>
         </div>
 
         <div className="marketplace-nav-center">
-          <button
-            type="button"
-            className={`market-nav-tab ${activeMarketTab === 'referral' ? 'active' : ''}`}
-            onClick={() => setActiveMarketTab('referral')}
-          >
-            <Users size={15} style={{ marginRight: '6px' }} />
-            <span>Referral Summary</span>
-          </button>
-          <button
-            type="button"
-            className={`market-nav-tab ${activeMarketTab === 'marketplace' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveMarketTab('marketplace');
-              setIsSlotModalOpen(false);
-            }}
-          >
-            <Store size={15} style={{ marginRight: '6px' }} />
-            <span>Select Provider</span>
-          </button>
+          <nav className="marketplace-stepper-pills">
+            <button
+              type="button"
+              className={`market-nav-step-pill ${activeMarketTab === 'referral' ? 'active' : 'completed'}`}
+              onClick={() => setActiveMarketTab('referral')}
+            >
+              <span className="step-pill-number">1</span>
+              <span className="step-pill-text">Referral Summary</span>
+            </button>
+            <div className="market-stepper-line" />
+            <button
+              type="button"
+              className={`market-nav-step-pill ${activeMarketTab === 'marketplace' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveMarketTab('marketplace');
+                setIsSlotModalOpen(false);
+              }}
+            >
+              <span className="step-pill-number">2</span>
+              <span className="step-pill-text">Select Provider</span>
+            </button>
+          </nav>
         </div>
 
         <div className="marketplace-nav-right">
@@ -547,9 +560,12 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
             <div className="doctor-avatar-circle">
               {doctorInitial}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span className="doctor-pill-name">{doctorName}</span>
-              <span style={{ fontSize: '11px', color: '#64748B' }}>{doctorSpecialty}</span>
+            <div className="doctor-pill-info">
+              <div className="doctor-pill-name-row">
+                <span className="doctor-pill-name">{doctorName}</span>
+                <span className="doctor-verified-dot" title="Authenticated Clinician" />
+              </div>
+              <span className="doctor-pill-specialty">{doctorSpecialty}</span>
             </div>
           </div>
         </div>
@@ -667,13 +683,13 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
                   value={referralData.address || 'Victoria Island, Lagos'}
                   onChange={(e) => onUpdateReferralData({ address: e.target.value })}
                   className="referral-unit-input"
-                  placeholder="Enter full address"
+                  placeholder="e.g. Victoria Island, Lagos"
                 />
               </div>
             </div>
           </div>
 
-          {/* 2. Diagnostic Scan & Clinical Indication Card */}
+          {/* 2. Diagnostic Protocol Card */}
           <div className="referral-summary-card-executive">
             <div className="referral-card-section-header">
               <div className="section-header-title-group">
@@ -691,26 +707,11 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
             </div>
 
             <div className="referral-card-inputs-grid">
-              {/* Scan Type DROPDOWN */}
               <div className="referral-input-unit">
-                <label className="referral-unit-label">
-                  Scan Type <span style={{ color: '#0A7E64' }}>*</span>
-                </label>
+                <label className="referral-unit-label">Scan Type *</label>
                 <select
-                  value={referralData.scanType || 'MRI'}
-                  onChange={(e) => {
-                    const newScan = e.target.value;
-                    onUpdateReferralData({ scanType: newScan });
-                    if (newScan.includes('MRI')) setEstimatedPriceText('₦70,000.00 - ₦95,000.00');
-                    else if (newScan.includes('PET')) setEstimatedPriceText('₦150,000.00 - ₦220,000.00');
-                    else if (newScan.includes('CT')) setEstimatedPriceText('₦45,000.00 - ₦65,000.00');
-                    else if (newScan.includes('Ultrasound')) setEstimatedPriceText('₦18,000.00 - ₦28,000.00');
-                    else if (newScan.includes('X-Ray')) setEstimatedPriceText('₦12,000.00 - ₦20,000.00');
-                    else if (newScan.includes('Mammogra')) setEstimatedPriceText('₦25,000.00 - ₦40,000.00');
-                    else if (newScan.includes('Fluoroscopy')) setEstimatedPriceText('₦30,000.00 - ₦48,000.00');
-                    else if (newScan.includes('Nuclear Medicine')) setEstimatedPriceText('₦80,000.00 - ₦135,000.00');
-                    else setEstimatedPriceText('₦35,000.00 - ₦55,000.00');
-                  }}
+                  value={referralData.scanType || 'MRI Scan (Magnetic Resonance Imaging)'}
+                  onChange={(e) => onUpdateReferralData({ scanType: e.target.value })}
                   className="referral-unit-input referral-unit-select"
                 >
                   {SCAN_TYPES.map((st) => (
@@ -721,13 +722,10 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
                 </select>
               </div>
 
-              {/* Body Part DROPDOWN */}
               <div className="referral-input-unit">
-                <label className="referral-unit-label">
-                  Body Part <span style={{ color: '#0A7E64' }}>*</span>
-                </label>
+                <label className="referral-unit-label">Body Part *</label>
                 <select
-                  value={referralData.bodyPart || 'Brain MRI'}
+                  value={referralData.bodyPart || 'Brain'}
                   onChange={(e) => onUpdateReferralData({ bodyPart: e.target.value })}
                   className="referral-unit-input referral-unit-select"
                 >
@@ -746,7 +744,6 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
                   value={providerName}
                   onChange={(e) => setProviderName(e.target.value)}
                   className="referral-unit-input"
-                  placeholder="Select in next step or enter preference"
                 />
               </div>
 
@@ -757,24 +754,23 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
                   value={estimatedPriceText}
                   onChange={(e) => setEstimatedPriceText(e.target.value)}
                   className="referral-unit-input"
-                  placeholder="₦30,000.00 - ₦35,000.00"
                 />
               </div>
             </div>
 
-            <div className="referral-input-unit" style={{ marginTop: '18px' }}>
-              <label className="referral-unit-label">Clinical Indication & Relevant Symptoms</label>
+            <div className="referral-input-unit" style={{ marginTop: '16px' }}>
+              <label className="referral-unit-label">Clinical Indication & Notes</label>
               <textarea
-                value={referralData.clinicalNote || 'Patient presents with persistent localized headaches, intermittent vertigo, and focal neurological signs. Rule out intracranial pathology or vascular anomaly.'}
+                value={referralData.clinicalNote}
                 onChange={(e) => onUpdateReferralData({ clinicalNote: e.target.value })}
                 className="referral-unit-textarea"
                 rows={3}
-                placeholder="Specify clinical rationale, duration of symptoms, and suspected differential diagnoses..."
+                placeholder="Clinical indications and history..."
               />
             </div>
           </div>
 
-          {/* 3. Referring Clinician & Clinical Records */}
+          {/* 3. Ordering Clinician & Attached Requisition Document Card */}
           <div className="referral-summary-card-executive">
             <div className="referral-card-section-header">
               <div className="section-header-title-group">
@@ -782,21 +778,26 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
                   <ShieldCheck size={16} />
                 </div>
                 <div>
-                  <h3 className="referral-card-section-label">Referring Clinician & Documentation</h3>
-                  <p className="referral-card-section-desc">Authorizing physician credentials and attached diagnostic requisition documents.</p>
+                  <h3 className="referral-card-section-label">Referring Clinician Authorization</h3>
+                  <p className="referral-card-section-desc">Digitally signed clinical requisition order and practitioner authorization.</p>
                 </div>
               </div>
+              <span className="summary-status-pill" style={{ margin: 0 }}>
+                <CheckCircle2 size={13} className="text-emerald" />
+                <span>MDCN Verified</span>
+              </span>
             </div>
 
-            <div className="summary-clinician-attachment-grid">
-              <div className="referral-clinician-detail-row">
-                <div className="referral-clinician-circle-avatar">
+            <div className="referral-clinician-dual-block">
+              <div className="referral-clinician-detail-box">
+                <div className="clinician-avatar-badge-large">
                   {doctorInitial}
                 </div>
-                <div className="referral-clinician-names-block">
-                  <span className="referral-clinician-name-main">{doctorName}</span>
-                  <span className="referral-clinician-role-sub">{doctorSpecialty} • MD, FMCP</span>
-                  <span style={{ fontSize: '11.5px', color: '#0A7E64', fontWeight: 600, marginTop: '2px' }}>
+                <div className="clinician-detail-text">
+                  <span className="clinician-full-name">{doctorName}</span>
+                  <span className="clinician-license-num">License: {doctorLicense} • {doctorSpecialty}</span>
+                  <span className="clinician-verified-tag">
+                    <CheckCircle2 size={12} />
                     Verified RESQ Clinician #44910
                   </span>
                 </div>
@@ -840,8 +841,6 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
               type="button"
               className="btn-proceed-to-book-resq"
               onClick={() => {
-                // Navigate to marketplace; DO NOT immediately open the date/time modal
-                // Let user select the facility first!
                 setActiveMarketTab('marketplace');
                 setIsSlotModalOpen(false);
               }}
@@ -855,19 +854,41 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
       ) : (
         /* Marketplace Body: Sidebar + Facility Cards Grid */
         <div className="marketplace-body">
-          {/* Left Sidebar: Referral Summary (Editable with Dropdowns) */}
-          <aside className="referral-summary-sidebar">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 className="sidebar-section-title" style={{ margin: 0 }}>Referral Summary</h3>
-              <button
-                type="button"
-                className="btn-sidebar-back-referral"
-                onClick={() => setActiveMarketTab('referral')}
-                title="Edit full referral summary"
-              >
-                <Edit3 size={12} />
-                <span>Full Review</span>
-              </button>
+          {/* Mobile Drawer Backdrop */}
+          {isMobileSummaryOpen && (
+            <div
+              className="marketplace-mobile-backdrop"
+              onClick={() => setIsMobileSummaryOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Left Sidebar: Desktop Persistent / Mobile Slide-Over Drawer */}
+          <aside className={`referral-summary-sidebar ${isMobileSummaryOpen ? 'mobile-open' : ''}`}>
+            <div className="sidebar-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText size={16} color="#0D9488" />
+                <h3 className="sidebar-section-title" style={{ margin: 0 }}>Referral Summary</h3>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="btn-sidebar-back-referral"
+                  onClick={() => setActiveMarketTab('referral')}
+                  title="Edit full referral summary"
+                >
+                  <Edit3 size={12} />
+                  <span>Full Review</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-sidebar-close-mobile"
+                  onClick={() => setIsMobileSummaryOpen(false)}
+                  aria-label="Close summary"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Patient Name */}
@@ -964,6 +985,23 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
 
           {/* Right Main Area: Facility Grid & Filters */}
           <main className="marketplace-content">
+            {/* Mobile Sticky Quick Summary Bar */}
+            <div className="marketplace-mobile-quickbar">
+              <button
+                type="button"
+                className="btn-mobile-toggle-summary"
+                onClick={() => setIsMobileSummaryOpen(true)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText size={15} color="#0D9488" />
+                  <span className="mobile-summary-text">
+                    Order: <strong>{referralData.fullName || 'Patient'}</strong> ({referralData.bodyPart || 'Scan'})
+                  </span>
+                </div>
+                <span className="mobile-summary-pill-btn">View Summary ⚙</span>
+              </button>
+            </div>
+
             {/* Top breadcrumb & header */}
             <div className="marketplace-header-row">
               <div>

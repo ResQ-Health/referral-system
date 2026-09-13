@@ -40,6 +40,7 @@ import {
   Mail,
   Phone,
   Award,
+  Menu,
 } from 'lucide-react';
 import { FacilityMarketplace, SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
 import type { Facility } from './FacilityMarketplace';
@@ -427,6 +428,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const [draftSearchQuery, setDraftSearchQuery] = useState('');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Modal navigation state: 'none' | 'choose-type' | 'choose-draft' | 'choose-existing' | 'patient-info' | 'scan-details' | 'scan-location'
   const [modalStep, setModalStep] = useState<'none' | 'choose-type' | 'choose-draft' | 'choose-existing' | 'patient-info' | 'scan-details' | 'scan-location'>('none');
@@ -1342,10 +1344,27 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
   return (
     <div className="clinician-layout">
-      {/* Left Sidebar */}
-      <aside className="clinician-sidebar">
+      {/* Mobile Drawer Backdrop */}
+      {isMobileSidebarOpen && (
+        <div
+          className="mobile-sidebar-backdrop"
+          onClick={() => setIsMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Left Sidebar (Desktop Persistent & Mobile Slide-Over Drawer) */}
+      <aside className={`clinician-sidebar ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-brand">
           <img src="/logo.png" alt="RESQ" className="resq-sidebar-logo" />
+          <button
+            type="button"
+            className="mobile-sidebar-close-btn"
+            onClick={() => setIsMobileSidebarOpen(false)}
+            aria-label="Close navigation menu"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -1357,7 +1376,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 key={item.id}
                 type="button"
                 className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-                onClick={() => handleTabChange(item.id)}
+                onClick={() => {
+                  handleTabChange(item.id);
+                  setIsMobileSidebarOpen(false);
+                }}
               >
                 <Icon size={19} className="nav-icon" />
                 <span className="nav-label">{item.label}</span>
@@ -1370,7 +1392,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
           <button
             type="button"
             className={`sidebar-nav-item ${activeTab === 'support' ? 'active' : ''}`}
-            onClick={() => handleTabChange('support')}
+            onClick={() => {
+              handleTabChange('support');
+              setIsMobileSidebarOpen(false);
+            }}
           >
             <Headphones size={19} className="nav-icon" />
             <span className="nav-label">Support</span>
@@ -1379,7 +1404,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
           <button
             type="button"
             className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => handleTabChange('settings')}
+            onClick={() => {
+              handleTabChange('settings');
+              setIsMobileSidebarOpen(false);
+            }}
           >
             <Settings size={19} className="nav-icon" />
             <span className="nav-label">Settings</span>
@@ -1427,9 +1455,20 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       <div className="clinician-main">
         {/* Top Header Bar */}
         <header className="clinician-header">
-          <h1 className="header-page-title">
-            {activeTab === 'referrals' ? 'Referral Lists' : 'Overview'}
-          </h1>
+          <div className="header-title-wrap">
+            <button
+              type="button"
+              className="mobile-menu-toggle-btn"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              aria-label="Open navigation menu"
+              title="Open menu"
+            >
+              <Menu size={22} />
+            </button>
+            <h1 className="header-page-title">
+              {activeTab === 'referrals' ? 'Referral Lists' : 'Overview'}
+            </h1>
+          </div>
 
           <div className="header-search-bar">
             <Search size={18} className="search-icon" />
@@ -2002,6 +2041,54 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             </div>
           </div>
         )}
+
+        {/* Mobile Quick Action Bottom Navigation Bar */}
+        <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
+          <button
+            type="button"
+            className={`mobile-bottom-item ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => handleTabChange('overview')}
+          >
+            <LayoutDashboard size={20} />
+            <span>Overview</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-bottom-item ${activeTab === 'referrals' ? 'active' : ''}`}
+            onClick={() => handleTabChange('referrals')}
+          >
+            <ClipboardList size={20} />
+            <span>Referrals</span>
+          </button>
+          <button
+            type="button"
+            className="mobile-bottom-create-btn"
+            onClick={() => {
+              handleTabChange('referrals');
+              setModalStep('choose-type');
+            }}
+            title="Create Referral"
+            aria-label="Create Referral"
+          >
+            <Plus size={22} />
+          </button>
+          <button
+            type="button"
+            className={`mobile-bottom-item ${activeTab === 'support' ? 'active' : ''}`}
+            onClick={() => handleTabChange('support')}
+          >
+            <Headphones size={20} />
+            <span>Support</span>
+          </button>
+          <button
+            type="button"
+            className={`mobile-bottom-item ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => handleTabChange('settings')}
+          >
+            <Settings size={20} />
+            <span>Settings</span>
+          </button>
+        </nav>
       </div>
 
       {/* ======================================================================

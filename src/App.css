@@ -8072,5 +8072,671 @@
   opacity: 0.9;
 }
 
+/* ==========================================================================
+   COMPREHENSIVE MOBILE VIEWPORT & RESPONSIVENESS (ALL SECTIONS & MODALS)
+   ========================================================================== */
 
+/* 1. Mobile Navigation Toggle & Bottom Nav (Hidden on Desktop) */
+.mobile-menu-toggle-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #06202E;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease;
+}
 
+.mobile-menu-toggle-btn:hover {
+  background-color: #F1F5F9;
+}
+
+.mobile-sidebar-close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  background: transparent;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mobile-sidebar-close-btn:hover {
+  background-color: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #DC2626;
+}
+
+.mobile-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 32, 46, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 1190;
+  animation: fadeIn 0.2s ease;
+}
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+.header-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 2. Tablet & Mobile Layout Adaptations (<= 1024px) */
+@media (max-width: 1024px) {
+  .clinician-layout {
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .mobile-menu-toggle-btn {
+    display: inline-flex;
+  }
+
+  .mobile-sidebar-close-btn {
+    display: inline-flex;
+  }
+
+  .clinician-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: -290px;
+    width: 280px;
+    z-index: 1200;
+    box-shadow: none;
+    transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .clinician-sidebar.mobile-open {
+    left: 0;
+    box-shadow: 4px 0 28px rgba(6, 32, 46, 0.22);
+  }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+  }
+
+  .clinician-main {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1;
+    padding-bottom: 74px; /* Space for bottom navigation */
+  }
+
+  /* Mobile Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 1000;
+    padding: 0 6px;
+    box-shadow: 0 -3px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .mobile-bottom-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748B;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: color 0.15s ease;
+  }
+
+  .mobile-bottom-item.active {
+    color: #06202E;
+    font-weight: 700;
+  }
+
+  .mobile-bottom-create-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #06202E;
+    color: #FFFFFF;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(6, 32, 46, 0.35);
+    margin-top: -18px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .mobile-bottom-create-btn:hover {
+    transform: scale(1.05);
+  }
+
+  /* Header Bar */
+  .clinician-header {
+    padding: 14px 20px;
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-search-bar {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    margin: 4px 0 0;
+  }
+
+  .header-page-title {
+    font-size: 20px;
+  }
+
+  /* Referrals View */
+  .referrals-body-padding {
+    padding: 0 20px 48px;
+  }
+
+  .referrals-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+}
+
+/* 3. Small Tablets & Phones (<= 768px) */
+@media (max-width: 768px) {
+  /* Overview Tab */
+  .overview-container {
+    padding: 16px 14px;
+  }
+
+  .overview-welcome-card {
+    padding: 22px 18px;
+    border-radius: 12px;
+  }
+
+  .welcome-title {
+    font-size: 20px;
+    line-height: 1.35;
+  }
+
+  .welcome-desc {
+    font-size: 13.5px;
+    margin-bottom: 18px;
+  }
+
+  .overview-profile-card {
+    padding: 18px 16px;
+    border-radius: 12px;
+  }
+
+  .profile-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .profile-card-user-info {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .profile-avatar-large {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+
+  .profile-name-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .profile-doctor-name {
+    font-size: 17px;
+  }
+
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .btn-edit-profile {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .overview-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .stat-icon-circle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stat-number {
+    font-size: 19px;
+  }
+
+  .overview-referrals-banner {
+    padding: 18px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+    gap: 14px;
+  }
+
+  .overview-referrals-banner .btn-create-referral {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Referrals List & Table */
+  .referrals-body-padding {
+    padding: 0 14px 40px;
+  }
+
+  .toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 0 8px;
+  }
+
+  .toolbar-left {
+    justify-content: space-between;
+  }
+
+  .toolbar-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .toolbar-action-btn {
+    flex: 1;
+    min-width: 72px;
+    justify-content: center;
+  }
+
+  .toolbar-icon-square {
+    flex: 0 0 38px;
+  }
+
+  .toolbar-right .btn-create-referral {
+    width: 100%;
+    justify-content: center;
+    margin-top: 4px;
+    height: 44px;
+  }
+
+  .filter-panel-top {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .filter-search-container {
+    width: 100%;
+  }
+
+  .filter-status-dropdown-wrapper {
+    width: 100%;
+  }
+
+  .filter-status-trigger-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .filter-status-dropdown-menu {
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+
+  /* Table Horizontal Scrolling */
+  .referrals-table-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+  }
+
+  .referrals-table {
+    min-width: 620px;
+  }
+
+  .referrals-table-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+    padding: 14px 16px;
+  }
+
+  .footer-showing-text {
+    font-size: 12px;
+  }
+
+  /* Facility Marketplace & Booking Summary */
+  .marketplace-navbar {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .marketplace-doctor-pill .doctor-pill-name {
+    display: none;
+  }
+
+  .marketplace-doctor-pill {
+    padding: 4px;
+    border-radius: 50%;
+  }
+
+  .summary-breadcrumb-bar {
+    padding: 10px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .emergency-alert-tag {
+    align-self: flex-start;
+  }
+
+  .booking-summary-content {
+    padding: 16px 14px;
+  }
+
+  .booking-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  /* Patient Booking & Payment */
+  .patient-portal-header {
+    padding: 14px 16px;
+  }
+
+  .patient-portal-container {
+    padding: 16px 14px;
+  }
+
+  .patient-grid-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .patient-meta-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .payment-tabs-row {
+    flex-direction: column;
+  }
+}
+
+/* 4. Mobile Phones & Bottom Sheet Modals (<= 640px) */
+@media (max-width: 640px) {
+  /* Modal Overlay as Mobile Bottom Sheet */
+  .modal-backdrop {
+    padding: 0 !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+  }
+
+  .modal-card-resq {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 20px 16px 36px !important;
+    max-height: 94vh !important;
+    margin: 0 !important;
+    box-shadow: 0 -8px 30px rgba(6, 32, 46, 0.25) !important;
+  }
+
+  .modal-header-top-nav {
+    gap: 8px;
+  }
+
+  .modal-nav-back-pill {
+    padding: 5px 10px;
+    font-size: 11.5px;
+    gap: 4px;
+  }
+
+  .modal-step-badge-indicator {
+    padding: 3px 8px;
+  }
+
+  .step-pct-pill {
+    display: none; /* Keep just 'Step X of 3' on small screens */
+  }
+
+  .modal-headline-title {
+    font-size: 18px;
+  }
+
+  .modal-headline-subtitle {
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  /* Stepper on Mobile */
+  .resq-stepper-container {
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+
+  .stepper-label-text {
+    display: none; /* Hide multi-word text, show numbered circle nodes */
+  }
+
+  .stepper-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .stepper-node-item {
+    padding: 2px;
+  }
+
+  .stepper-connector-line {
+    margin: 0 4px;
+  }
+
+  /* Form Fields & Grids */
+  .resq-form-row-2col,
+  .new-user-dob-gender-row,
+  .new-user-email-phone-row,
+  .pay-row-2col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .patient-accordion-item {
+    padding: 12px 14px;
+  }
+
+  .resq-modal-footer-between,
+  .resq-modal-actions-right {
+    flex-direction: column-reverse !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-top: 18px !important;
+  }
+
+  .resq-modal-footer-between button,
+  .resq-modal-actions-right button,
+  .btn-boxed-primary,
+  .resq-btn-primary,
+  .btn-save-draft {
+    width: 100% !important;
+    justify-content: center !important;
+    height: 46px !important;
+  }
+
+  /* Requisition Document Preview Modal Fullscreen on Mobile */
+  .requisition-doc-modal-card {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+
+  .req-modal-top-bar {
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .req-header-title {
+    font-size: 12px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .req-nav-segmented {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .req-doc-scroll-area {
+    padding: 10px 6px 40px;
+    gap: 18px;
+  }
+
+  .req-paper-sheet {
+    padding: 16px 12px;
+    min-height: auto;
+  }
+
+  .req-sheet-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .req-header-contacts {
+    text-align: left;
+  }
+
+  /* Referral Type Selection Modal Cards */
+  .referral-type-option-card {
+    padding: 14px;
+  }
+
+  .option-card-content h4 {
+    font-size: 14.5px;
+  }
+
+  .option-card-content p {
+    font-size: 12px;
+  }
+}
+
+/* 5. Extra Small Phones (<= 480px) */
+@media (max-width: 480px) {
+  .clinician-header {
+    padding: 10px 12px;
+  }
+
+  .header-page-title {
+    font-size: 18px;
+  }
+
+  .overview-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .referrals-kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Auth Screens */
+  .auth-card-container,
+  .registration-container,
+  .verification-container {
+    padding: 0 10px;
+  }
+
+  .auth-heading,
+  .registration-heading,
+  .verification-heading {
+    font-size: 24px;
+  }
+
+  .btn-google-pill {
+    font-size: 13.5px;
+    height: 44px;
+  }
+
+  /* 6-Digit OTP Inputs */
+  .otp-inputs-row {
+    gap: 6px;
+  }
+
+  .otp-digit-box {
+    width: 38px;
+    height: 48px;
+    font-size: 20px;
+    border-radius: 6px;
+  }
+
+  .toast-card {
+    width: 100%;
+  }
+
+  .toast-container {
+    left: 12px;
+    right: 12px;
+    top: 12px;
+  }
+}

@@ -910,6 +910,20 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     return true;
   });
 
+  // Mobile Pagination State (Strictly 5 referrals per page on mobile view)
+  const MOBILE_REFERRALS_PER_PAGE = 5;
+  const [mobileReferralPage, setMobileReferralPage] = useState(1);
+
+  useEffect(() => {
+    setMobileReferralPage(1);
+  }, [tableSearch, activeStatusFilters]);
+
+  const totalMobilePages = Math.ceil(filteredReferrals.length / MOBILE_REFERRALS_PER_PAGE) || 1;
+  const safeMobilePage = Math.min(mobileReferralPage, totalMobilePages);
+  const mobileStartIndex = (safeMobilePage - 1) * MOBILE_REFERRALS_PER_PAGE;
+  const mobileEndIndex = mobileStartIndex + MOBILE_REFERRALS_PER_PAGE;
+  const paginatedMobileReferrals = filteredReferrals.slice(mobileStartIndex, mobileEndIndex);
+
   const getStatusClass = (status: ReferralStatus | string): string => {
     switch (status) {
       case 'Confirmed':
@@ -2268,7 +2282,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                         </button>
                       </div>
                     ) : (
-                      filteredReferrals.map((ref) => {
+                      paginatedMobileReferrals.map((ref) => {
                         const statusClass = getStatusClass(ref.status);
                         return (
                           <div key={ref.id} className="mobile-referral-card">
@@ -2322,33 +2336,41 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                       })
                     )}
 
-                    {/* Mobile Pagination Controls */}
+                    {/* Mobile Pagination Controls (Strictly 5 per page) */}
                     {filteredReferrals.length > 0 && (
                       <div className="mobile-referrals-pagination">
                         <span className="mobile-pagination-info">
-                          Showing {filteredReferrals.length} of {referrals.length} referrals
+                          Showing {mobileStartIndex + 1} to {Math.min(mobileEndIndex, filteredReferrals.length)} of {filteredReferrals.length} referrals
                         </span>
                         <div className="pagination-controls">
-                          <button type="button" className="page-btn page-arrow-btn" aria-label="Previous page">
-                            <ChevronLeft size={14} />
-                          </button>
                           <button
                             type="button"
-                            className={`page-btn ${currentPage === 1 ? 'active' : ''}`}
-                            onClick={() => setCurrentPage(1)}
+                            className="page-btn page-arrow-btn"
+                            aria-label="Previous page"
+                            disabled={safeMobilePage <= 1}
+                            onClick={() => setMobileReferralPage((p) => Math.max(1, p - 1))}
+                            style={{ opacity: safeMobilePage <= 1 ? 0.35 : 1, cursor: safeMobilePage <= 1 ? 'not-allowed' : 'pointer' }}
                           >
-                            1
+                            <ChevronLeft size={14} />
                           </button>
-                          {referrals.length > 10 && (
+                          {Array.from({ length: totalMobilePages }, (_, i) => i + 1).map((pageNum) => (
                             <button
+                              key={pageNum}
                               type="button"
-                              className={`page-btn ${currentPage === 2 ? 'active' : ''}`}
-                              onClick={() => setCurrentPage(2)}
+                              className={`page-btn ${safeMobilePage === pageNum ? 'active' : ''}`}
+                              onClick={() => setMobileReferralPage(pageNum)}
                             >
-                              2
+                              {pageNum}
                             </button>
-                          )}
-                          <button type="button" className="page-btn page-arrow-btn" aria-label="Next page">
+                          ))}
+                          <button
+                            type="button"
+                            className="page-btn page-arrow-btn"
+                            aria-label="Next page"
+                            disabled={safeMobilePage >= totalMobilePages}
+                            onClick={() => setMobileReferralPage((p) => Math.min(totalMobilePages, p + 1))}
+                            style={{ opacity: safeMobilePage >= totalMobilePages ? 0.35 : 1, cursor: safeMobilePage >= totalMobilePages ? 'not-allowed' : 'pointer' }}
+                          >
                             <ChevronRight size={14} />
                           </button>
                         </div>
@@ -4218,30 +4240,21 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
               </div>
 
               {/* MODAL ACTIONS */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginTop: '8px',
-                  paddingTop: '16px',
-                  borderTop: '1px solid #E2E8F0',
-                }}
-              >
+              <div className="clinician-profile-modal-actions">
                 <button
                   type="button"
-                  className="btn-create-referral-cancel"
+                  className="btn-clinician-profile-cancel"
                   onClick={() => setIsProfileModalOpen(false)}
                   disabled={isSavingProfile}
+                  title="Cancel editing profile"
                 >
-                  Cancel
+                  <X size={15} />
+                  <span>Cancel</span>
                 </button>
                 <button
                   type="submit"
-                  className="btn-proceed-black"
+                  className="btn-proceed-black btn-profile-save"
                   disabled={isSavingProfile}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 >
                   {isSavingProfile ? (
                     <>

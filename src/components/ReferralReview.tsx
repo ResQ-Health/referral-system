@@ -415,48 +415,60 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
           </div>
         </div>
 
-        {/* Attached Requisition Document Card (Executive Redesign - Clean & Uncluttered) */}
+        {/* Attached Requisition Document Card (Modern Executive Layout - De-cluttered & Multi-Tier) */}
         <div className="requisition-doc-executive-card">
-          <div className="req-doc-main-row">
-            <div className="req-doc-identity-group">
-              <div className="req-doc-pdf-icon-badge">
-                <FileText size={20} />
-                <span className="pdf-tag">PDF</span>
-              </div>
-              <div className="req-doc-text-block">
-                <div className="req-doc-title-row">
-                  <span className="req-doc-filename">{documentName}</span>
-                  <span className="req-doc-bound-pill">
-                    <CheckCircle2 size={11} />
-                    <span>Bound to Referral</span>
-                  </span>
-                </div>
-                <span className="req-doc-meta-sub">
-                  1.2 MB • Official 1-Page A4 Requisition Order • Digitally Sealed
-                </span>
+          {/* Tier 1: Category Label & Status Pill */}
+          <div className="req-doc-top-bar">
+            <div className="req-doc-category-badge">
+              <FileText size={13} />
+              <span>Diagnostic Requisition Order</span>
+            </div>
+            <div className="req-doc-bound-pill">
+              <CheckCircle2 size={12} />
+              <span>Bound to Referral</span>
+            </div>
+          </div>
+
+          {/* Tier 2: Document File Info */}
+          <div className="req-doc-content-body">
+            <div className="req-doc-pdf-icon-badge">
+              <FileText size={22} />
+              <span className="pdf-tag">PDF</span>
+            </div>
+            <div className="req-doc-info-col">
+              <div className="req-doc-filename-large">{documentName}</div>
+              <div className="req-doc-meta-pills">
+                <span className="req-doc-sub-tag">1.2 MB</span>
+                <span className="req-doc-dot">•</span>
+                <span className="req-doc-sub-tag">1-Page Standard A4</span>
+                <span className="req-doc-dot">•</span>
+                <span className="req-doc-sub-tag">Digitally Sealed</span>
               </div>
             </div>
+          </div>
 
+          {/* Tier 3: Action & Verification */}
+          <div className="req-doc-action-strip">
             <button
               type="button"
               className="btn-view-requisition-action"
               onClick={() => setIsPreviewDocOpen(true)}
-              title="Click to view and preview Clinical_Requisition_Order.pdf"
+              title={`Click to view and preview ${documentName}`}
             >
-              <Eye size={14} />
-              <span>View Requisition</span>
+              <Eye size={15} />
+              <span>View Requisition Order</span>
             </button>
-          </div>
 
-          <div className="req-doc-security-footer">
-            <div className="req-doc-sec-item">
-              <CheckCircle2 size={12} className="text-emerald" />
-              <span>MDCN Practitioner Registration Validated</span>
-            </div>
-            <div className="req-doc-sec-bullet">•</div>
-            <div className="req-doc-sec-item">
-              <CheckCircle2 size={12} className="text-emerald" />
-              <span>Electronic PACS Dispatch Authorized</span>
+            <div className="req-doc-security-footer">
+              <div className="req-doc-sec-item">
+                <CheckCircle2 size={12} className="text-emerald" />
+                <span>MDCN Registration Validated</span>
+              </div>
+              <div className="req-doc-sec-bullet">•</div>
+              <div className="req-doc-sec-item">
+                <CheckCircle2 size={12} className="text-emerald" />
+                <span>PACS Dispatch Authorized</span>
+              </div>
             </div>
           </div>
         </div>

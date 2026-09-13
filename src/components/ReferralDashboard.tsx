@@ -1768,7 +1768,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     </button>
                     <button
                       type="button"
-                      className="toolbar-action-btn"
+                      className="toolbar-action-btn desktop-only-action"
                       title="Print"
                       onClick={() => window.print()}
                     >
@@ -1777,7 +1777,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     </button>
                     <button
                       type="button"
-                      className="toolbar-action-btn"
+                      className="toolbar-action-btn desktop-only-action"
                       onClick={() => setIsStatusFilterOpen((prev) => !prev)}
                     >
                       <span>Filter</span>
@@ -1790,7 +1790,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                       className="btn-create-referral"
                       onClick={() => setModalStep('choose-type')}
                     >
-                      Create referral
+                      <Plus size={15} className="mobile-only-inline" />
+                      <span>Create referral</span>
                     </button>
                   </div>
                 </div>
@@ -1842,9 +1843,19 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                           onChange={(e) => setTableSearch(e.target.value)}
                           className="filter-search-input"
                         />
+                        {tableSearch && (
+                          <button
+                            type="button"
+                            className="filter-search-clear-btn"
+                            onClick={() => setTableSearch('')}
+                            aria-label="Clear search"
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
                       </div>
 
-                      <div className="filter-status-dropdown-wrapper">
+                      <div className="filter-status-dropdown-wrapper desktop-only-action">
                         <button
                           type="button"
                           className="filter-status-trigger-btn"
@@ -1875,6 +1886,30 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                           </div>
                         )}
                       </div>
+                    </div>
+
+                    {/* Mobile Quick Status Chips */}
+                    <div className="mobile-status-chips-scroll">
+                      <button
+                        type="button"
+                        className={`mobile-status-chip ${activeStatusFilters.length === 0 ? 'active' : ''}`}
+                        onClick={handleClearFilters}
+                      >
+                        All ({referrals.length})
+                      </button>
+                      {ALL_STATUS_OPTIONS.map((status) => {
+                        const isSelected = activeStatusFilters.includes(status);
+                        return (
+                          <button
+                            key={status}
+                            type="button"
+                            className={`mobile-status-chip ${isSelected ? 'active' : ''}`}
+                            onClick={() => toggleStatusFilter(status)}
+                          >
+                            {status}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {/* Active filters row */}
@@ -1911,8 +1946,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     )}
                   </div>
 
-                  {/* Referrals Data Table */}
-                  <div className="referrals-table-card">
+                  {/* Referrals Data Table (Desktop Only) */}
+                  <div className="referrals-table-card referrals-desktop-only">
                     <table className="referrals-table">
                       <thead>
                         <tr>
@@ -2014,6 +2049,130 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                         </button>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Referrals Mobile Cards View (Mobile Only) */}
+                  <div className="referrals-mobile-cards-view">
+                    {referrals.length === 0 ? (
+                      <div className="mobile-empty-referrals-card">
+                        <div className="mobile-empty-icon-circle">
+                          <ClipboardList size={30} color="#0D9488" />
+                        </div>
+                        <h3 className="mobile-empty-title">No referrals yet</h3>
+                        <p className="mobile-empty-desc">
+                          Referrals you create will appear here in real-time, and diagnostic booking payment links will be emailed directly to your patient.
+                        </p>
+                        <button
+                          type="button"
+                          className="btn-create-referral mobile-empty-btn"
+                          onClick={() => setModalStep('choose-type')}
+                        >
+                          <Plus size={16} />
+                          <span>Create First Referral</span>
+                        </button>
+                      </div>
+                    ) : filteredReferrals.length === 0 ? (
+                      <div className="mobile-empty-filtered-card">
+                        <Filter size={24} color="#94A3B8" />
+                        <h4 className="mobile-empty-filtered-title">No matching referrals</h4>
+                        <p className="mobile-empty-filtered-desc">
+                          No referrals found matching "{tableSearch || activeStatusFilters.join(', ')}".
+                        </p>
+                        <button
+                          type="button"
+                          className="filter-clear-link"
+                          onClick={handleClearFilters}
+                        >
+                          Reset Filters
+                        </button>
+                      </div>
+                    ) : (
+                      filteredReferrals.map((ref) => {
+                        const statusClass = getStatusClass(ref.status);
+                        return (
+                          <div key={ref.id} className="mobile-referral-card">
+                            <div className="mobile-ref-card-header">
+                              <div className="mobile-ref-card-title-group">
+                                <span className="mobile-ref-patient-name">{ref.patientName}</span>
+                                <span className="mobile-ref-id-badge">{ref.id}</span>
+                              </div>
+                              <span className={`status-pill ${statusClass}`}>
+                                <span className="status-dot" />
+                                {ref.status}
+                              </span>
+                            </div>
+
+                            <div className="mobile-ref-card-divider" />
+
+                            <div className="mobile-ref-card-body">
+                              <div className="mobile-ref-detail-item">
+                                <span className="mobile-ref-detail-label">Service</span>
+                                <span className="mobile-ref-detail-val service-highlight">
+                                  {ref.service || ref.specialty || 'General Radiology'}
+                                </span>
+                              </div>
+
+                              <div className="mobile-ref-detail-item">
+                                <span className="mobile-ref-detail-label">Facility / Provider</span>
+                                <div className="mobile-ref-facility-row">
+                                  <Building2 size={13} className="text-secondary" />
+                                  <span className={`mobile-ref-detail-val ${ref.provider === 'Not selected' || ref.hospital === 'Not selected' ? 'provider-muted' : ''}`}>
+                                    {ref.provider || ref.hospital || 'Not selected'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mobile-ref-card-footer">
+                              <div className="mobile-ref-date">
+                                <Calendar size={12} className="text-secondary" />
+                                <span>{ref.date}</span>
+                              </div>
+                              <span className="mobile-ref-status-hint">
+                                {ref.status === 'Confirmed'
+                                  ? 'Appointment Confirmed'
+                                  : ref.status === 'Booking in Progress'
+                                  ? 'Center Reviewing'
+                                  : 'Payment Link Sent'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+
+                    {/* Mobile Pagination Controls */}
+                    {filteredReferrals.length > 0 && (
+                      <div className="mobile-referrals-pagination">
+                        <span className="mobile-pagination-info">
+                          Showing {filteredReferrals.length} of {referrals.length} referrals
+                        </span>
+                        <div className="pagination-controls">
+                          <button type="button" className="page-btn page-arrow-btn" aria-label="Previous page">
+                            <ChevronLeft size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className={`page-btn ${currentPage === 1 ? 'active' : ''}`}
+                            onClick={() => setCurrentPage(1)}
+                          >
+                            1
+                          </button>
+                          {referrals.length > 10 && (
+                            <button
+                              type="button"
+                              className={`page-btn ${currentPage === 2 ? 'active' : ''}`}
+                              onClick={() => setCurrentPage(2)}
+                            >
+                              2
+                            </button>
+                          )}
+                          <button type="button" className="page-btn page-arrow-btn" aria-label="Next page">
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

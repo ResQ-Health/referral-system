@@ -1632,6 +1632,27 @@
   text-decoration: underline;
 }
 
+/* Referrals Mobile/Desktop Visibility Defaults */
+.mobile-only-inline {
+  display: none;
+}
+
+.desktop-only-action {
+  display: inline-flex;
+}
+
+.referrals-desktop-only {
+  display: block;
+}
+
+.referrals-mobile-cards-view {
+  display: none;
+}
+
+.mobile-status-chips-scroll {
+  display: none;
+}
+
 /* Referrals Table Card */
 .referrals-table-card {
   background-color: #FFFFFF;
@@ -8369,91 +8390,428 @@
     justify-content: center;
   }
 
-  /* Referrals List & Table */
-  .referrals-body-padding {
-    padding: 0 14px 40px;
+  /* Referrals List - Modern Mobile Redesign */
+  .mobile-only-inline {
+    display: inline-flex !important;
   }
 
+  .desktop-only-action {
+    display: none !important;
+  }
+
+  .referrals-desktop-only {
+    display: none !important;
+  }
+
+  .referrals-body-padding {
+    padding: 0 14px 96px;
+  }
+
+  /* Sleek Modern Mobile Toolbar */
   .toolbar-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 14px 0 8px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0 12px;
+    gap: 10px;
   }
 
   .toolbar-left {
-    justify-content: space-between;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .total-patients-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    background: #F1F5F9;
+    padding: 4px 10px;
+    border-radius: 20px;
   }
 
   .toolbar-right {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
-    width: 100%;
-  }
-
-  .toolbar-action-btn {
-    flex: 1;
-    min-width: 72px;
-    justify-content: center;
+    width: auto;
   }
 
   .toolbar-icon-square {
     flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
   }
 
   .toolbar-right .btn-create-referral {
-    width: 100%;
-    justify-content: center;
-    margin-top: 4px;
-    height: 44px;
+    width: auto;
+    height: 38px;
+    padding: 0 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 8px;
+    margin-top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  /* Compact 2x2 KPI Grid on Mobile */
+  .referrals-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .referrals-kpi-card {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .kpi-title-row {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748B;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .kpi-number-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0F172A;
+    letter-spacing: -0.5px;
+  }
+
+  /* Mobile Search & Filter Panel */
+  .referrals-filter-panel {
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    margin-bottom: 14px;
   }
 
   .filter-panel-top {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
 
   .filter-search-container {
     width: 100%;
+    height: 42px;
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
   }
 
-  .filter-status-dropdown-wrapper {
-    width: 100%;
+  .filter-search-container:focus-within {
+    border-color: #0D9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
   }
 
-  .filter-status-trigger-btn {
-    width: 100%;
-    justify-content: space-between;
+  .filter-search-input {
+    flex: 1;
+    font-size: 13.5px;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: #0F172A;
   }
 
-  .filter-status-dropdown-menu {
-    width: 100%;
-    left: 0;
-    right: 0;
+  .filter-search-clear-btn {
+    border: none;
+    background: #E2E8F0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #475569;
+    padding: 0;
+    flex-shrink: 0;
   }
 
-  /* Table Horizontal Scrolling */
-  .referrals-table-card {
+  /* Mobile Status Chips Scrollable Row */
+  .mobile-status-chips-scroll {
+    display: flex;
+    gap: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 2px 2px 6px;
+    scrollbar-width: none;
+  }
+
+  .mobile-status-chips-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-status-chip {
+    flex-shrink: 0;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .mobile-status-chip:active {
+    transform: scale(0.97);
+  }
+
+  .mobile-status-chip.active {
+    background: #0D9488;
+    color: #FFFFFF;
+    border-color: #0D9488;
+    box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25);
+  }
+
+  /* Mobile Referral Cards View */
+  .referrals-mobile-cards-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobile-referral-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 14px 15px 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .mobile-referral-card:active {
+    transform: scale(0.99);
+  }
+
+  .mobile-ref-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .mobile-ref-card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .mobile-ref-patient-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0F172A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-ref-id-badge {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    background: #F1F5F9;
+    padding: 2px 7px;
+    border-radius: 5px;
+    width: fit-content;
+    letter-spacing: 0.2px;
+  }
+
+  .mobile-ref-card-divider {
+    height: 1px;
+    background: #F1F5F9;
+    margin: 10px 0 11px;
+  }
+
+  .mobile-ref-card-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 11px;
+  }
+
+  .mobile-ref-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .mobile-ref-detail-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #94A3B8;
+  }
+
+  .mobile-ref-detail-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E293B;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-ref-detail-val.service-highlight {
+    color: #0F766E;
+  }
+
+  .mobile-ref-facility-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .mobile-ref-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px dashed #E2E8F0;
+    font-size: 11.5px;
+    color: #64748B;
+  }
+
+  .mobile-ref-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+  }
+
+  .mobile-ref-status-hint {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0D9488;
+    background: #F0FDFA;
+    padding: 2px 8px;
     border-radius: 10px;
   }
 
-  .referrals-table {
-    min-width: 620px;
-  }
-
-  .referrals-table-footer {
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
+  /* Empty State Cards on Mobile */
+  .mobile-empty-referrals-card {
+    background: #FFFFFF;
+    border: 1.5px dashed #CBD5E1;
+    border-radius: 16px;
+    padding: 36px 18px;
     text-align: center;
-    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
   }
 
-  .footer-showing-text {
+  .mobile-empty-icon-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #F0FDFA;
+    border: 1px solid #CCFBF1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+
+  .mobile-empty-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0;
+  }
+
+  .mobile-empty-desc {
+    font-size: 13px;
+    color: #64748B;
+    line-height: 1.5;
+    max-width: 290px;
+    margin: 0;
+  }
+
+  .mobile-empty-btn {
+    margin-top: 8px;
+    width: 100%;
+    max-width: 260px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    border-radius: 10px;
+  }
+
+  .mobile-empty-filtered-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 32px 18px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-empty-filtered-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+  }
+
+  .mobile-empty-filtered-desc {
+    font-size: 12.5px;
+    color: #64748B;
+    margin: 0;
+  }
+
+  .mobile-referrals-pagination {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 0 16px;
+  }
+
+  .mobile-pagination-info {
     font-size: 12px;
+    color: #64748B;
+    font-weight: 500;
   }
 
   /* Facility Marketplace & Booking Summary */

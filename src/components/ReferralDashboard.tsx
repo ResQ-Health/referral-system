@@ -1800,20 +1800,23 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
               </div>
             ) : (
               <div className="referrals-content-area">
-                {/* Action Toolbar Row */}
-                <div className="toolbar-row">
+                {/* Clean, High-Professionalism Referral Header */}
+                <div className="toolbar-row referrals-main-toolbar">
                   <div className="toolbar-left">
-                    <Users size={16} className="text-secondary" />
-                    <span className="total-patients-count">
-                      {referrals.length} Total referrals
-                    </span>
+                    <div className="referrals-title-badge-group">
+                      <h2 className="referrals-view-title">Referrals</h2>
+                      <span className="total-patients-count">
+                        <span className="live-status-dot" />
+                        {referrals.length} Total
+                      </span>
+                    </div>
                   </div>
 
                   <div className="toolbar-right">
                     <button
                       type="button"
                       className="toolbar-action-btn toolbar-icon-square"
-                      title="Refresh"
+                      title="Refresh referrals"
                       onClick={() => {
                         loadDoctorReferrals();
                         setTableSearch('');
@@ -1824,19 +1827,11 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     <button
                       type="button"
                       className="toolbar-action-btn desktop-only-action"
-                      title="Print"
+                      title="Print referral directory"
                       onClick={() => window.print()}
                     >
                       <span>Print</span>
                       <Printer size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      className="toolbar-action-btn desktop-only-action"
-                      onClick={() => setIsStatusFilterOpen((prev) => !prev)}
-                    >
-                      <span>Filter</span>
-                      <Filter size={14} />
                     </button>
 
                     {/* Create Referral Trigger Button */}
@@ -1845,45 +1840,69 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                       className="btn-create-referral"
                       onClick={() => setModalStep('choose-type')}
                     >
-                      <Plus size={15} className="mobile-only-inline" />
+                      <Plus size={15} />
                       <span>Create referral</span>
                     </button>
                   </div>
                 </div>
 
                 <div className="referrals-body-padding">
-                  {/* KPI Cards Row */}
-                  <div className="referrals-kpi-grid">
-                    <div className="referrals-kpi-card">
-                      <div className="kpi-title-row">
-                        <span>Total Referrals</span>
-                      </div>
-                      <div className="kpi-number-value">{totalKpi}</div>
-                    </div>
+                  {/* Ultra-Compact High-Professionalism Status Metrics Strip */}
+                  <div className="referrals-metrics-strip" role="region" aria-label="Referral status summary">
+                    <button
+                      type="button"
+                      className={`metric-segment ${activeStatusFilters.length === 0 ? 'active' : ''}`}
+                      onClick={handleClearFilters}
+                      title="View all referrals"
+                    >
+                      <span className="metric-seg-label">All</span>
+                      <span className="metric-seg-val">{totalKpi}</span>
+                    </button>
 
-                    <div className="referrals-kpi-card">
-                      <div className="kpi-title-row">
-                        <span className="kpi-indicator-dot kpi-dot-submitted" />
-                        <span>Submitted</span>
-                      </div>
-                      <div className="kpi-number-value">{submittedKpi}</div>
-                    </div>
+                    <div className="metric-strip-divider" />
 
-                    <div className="referrals-kpi-card">
-                      <div className="kpi-title-row">
-                        <span className="kpi-indicator-dot kpi-dot-progress" />
-                        <span>Booking in progress</span>
+                    <button
+                      type="button"
+                      className={`metric-segment ${activeStatusFilters.includes('Submitted') ? 'active' : ''}`}
+                      onClick={() => toggleStatusFilter('Submitted')}
+                      title="Filter by Submitted"
+                    >
+                      <div className="metric-seg-label-group">
+                        <span className="metric-seg-dot dot-submitted" />
+                        <span className="metric-seg-label">Submitted</span>
                       </div>
-                      <div className="kpi-number-value">{bookingKpi}</div>
-                    </div>
+                      <span className="metric-seg-val">{submittedKpi}</span>
+                    </button>
 
-                    <div className="referrals-kpi-card">
-                      <div className="kpi-title-row">
-                        <span className="kpi-indicator-dot kpi-dot-confirmed" />
-                        <span>Confirmed</span>
+                    <div className="metric-strip-divider" />
+
+                    <button
+                      type="button"
+                      className={`metric-segment ${activeStatusFilters.includes('Booking in Progress') ? 'active' : ''}`}
+                      onClick={() => toggleStatusFilter('Booking in Progress')}
+                      title="Filter by In Progress"
+                    >
+                      <div className="metric-seg-label-group">
+                        <span className="metric-seg-dot dot-progress" />
+                        <span className="metric-seg-label">In Progress</span>
                       </div>
-                      <div className="kpi-number-value">{confirmedKpi}</div>
-                    </div>
+                      <span className="metric-seg-val">{bookingKpi}</span>
+                    </button>
+
+                    <div className="metric-strip-divider" />
+
+                    <button
+                      type="button"
+                      className={`metric-segment ${activeStatusFilters.includes('Confirmed') ? 'active' : ''}`}
+                      onClick={() => toggleStatusFilter('Confirmed')}
+                      title="Filter by Confirmed"
+                    >
+                      <div className="metric-seg-label-group">
+                        <span className="metric-seg-dot dot-confirmed" />
+                        <span className="metric-seg-label">Confirmed</span>
+                      </div>
+                      <span className="metric-seg-val">{confirmedKpi}</span>
+                    </button>
                   </div>
 
                   {/* Search & Filter Container */}
@@ -1893,7 +1912,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                         <Search size={16} className="filter-search-icon" />
                         <input
                           type="text"
-                          placeholder="Search by referral ID or patient name"
+                          placeholder="Search by referral ID or patient name..."
                           value={tableSearch}
                           onChange={(e) => setTableSearch(e.target.value)}
                           className="filter-search-input"
@@ -1917,7 +1936,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                           onClick={() => setIsStatusFilterOpen(!isStatusFilterOpen)}
                         >
                           <SlidersHorizontal size={14} />
-                          <span>Filter by Status</span>
+                          <span>Status Filter</span>
                           <ChevronDown size={14} />
                         </button>
 
@@ -1943,61 +1962,34 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                       </div>
                     </div>
 
-                    {/* Mobile Quick Status Chips */}
-                    <div className="mobile-status-chips-scroll">
-                      <button
-                        type="button"
-                        className={`mobile-status-chip ${activeStatusFilters.length === 0 ? 'active' : ''}`}
-                        onClick={handleClearFilters}
-                      >
-                        All ({referrals.length})
-                      </button>
-                      {ALL_STATUS_OPTIONS.map((status) => {
-                        const isSelected = activeStatusFilters.includes(status);
-                        return (
-                          <button
-                            key={status}
-                            type="button"
-                            className={`mobile-status-chip ${isSelected ? 'active' : ''}`}
-                            onClick={() => toggleStatusFilter(status)}
-                          >
-                            {status}
-                          </button>
-                        );
-                      })}
-                    </div>
-
                     {/* Active filters row */}
                     {activeStatusFilters.length > 0 && (
-                      <>
-                        <div className="filter-divider" />
-                        <div className="filter-panel-active-row">
-                          <span className="active-filter-label">
-                            {activeStatusFilters.length} filter{activeStatusFilters.length === 1 ? '' : 's'} active
+                      <div className="filter-panel-active-row">
+                        <span className="active-filter-label">
+                          {activeStatusFilters.length} filter{activeStatusFilters.length === 1 ? '' : 's'} active:
+                        </span>
+
+                        {activeStatusFilters.map((status) => (
+                          <span key={status} className="active-filter-pill">
+                            {status}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveStatusFilter(status)}
+                              aria-label={`Remove ${status} filter`}
+                            >
+                              <X size={12} />
+                            </button>
                           </span>
+                        ))}
 
-                          {activeStatusFilters.map((status) => (
-                            <span key={status} className="active-filter-pill">
-                              Status: {status}
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveStatusFilter(status)}
-                                aria-label={`Remove ${status} filter`}
-                              >
-                                <X size={12} />
-                              </button>
-                            </span>
-                          ))}
-
-                          <button
-                            type="button"
-                            className="filter-clear-link"
-                            onClick={handleClearFilters}
-                          >
-                            Clear Filters
-                          </button>
-                        </div>
-                      </>
+                        <button
+                          type="button"
+                          className="filter-clear-link"
+                          onClick={handleClearFilters}
+                        >
+                          Clear Filters
+                        </button>
+                      </div>
                     )}
                   </div>
 

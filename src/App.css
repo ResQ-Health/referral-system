@@ -1391,60 +1391,130 @@
   padding: 0 36px 48px;
 }
 
-/* KPI Metric Cards Grid */
-.referrals-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 24px;
+/* Referral Toolbar & Title */
+.referrals-main-toolbar {
+  padding: 18px 36px 14px;
 }
 
-.referrals-kpi-card {
+.referrals-title-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.referrals-view-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #06202E;
+  letter-spacing: -0.4px;
+}
+
+.live-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Compact, High-Professionalism Metrics Strip (Takes minimal space, interactive 1-click filter) */
+.referrals-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   background-color: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 12px;
-  padding: 22px 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  overflow: hidden;
 }
 
-.kpi-title-row {
+.metric-segment {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  position: relative;
+}
+
+.metric-segment:hover {
+  background-color: #F8FAFC;
+}
+
+.metric-segment.active {
+  background-color: #F0FDFA;
+}
+
+.metric-segment.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
+  height: 2.5px;
+  background-color: #0D9488;
+  border-radius: 2px 2px 0 0;
+}
+
+.metric-strip-divider {
+  width: 1px;
+  background-color: #F1F5F9;
+  height: 100%;
+}
+
+.metric-seg-label-group {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: #64748B;
 }
 
-.kpi-indicator-dot {
-  width: 7px;
-  height: 7px;
+.metric-seg-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748B;
+  transition: color 0.15s ease;
+}
+
+.metric-segment.active .metric-seg-label {
+  color: #0F766E;
+  font-weight: 600;
+}
+
+.metric-seg-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.3px;
+  transition: color 0.15s ease;
+}
+
+.metric-segment.active .metric-seg-val {
+  color: #0D9488;
+}
+
+.metric-seg-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.kpi-dot-submitted {
-  background-color: #94A3B8;
+.dot-submitted {
+  background-color: #2563EB;
 }
 
-.kpi-dot-progress {
-  background-color: #06202E;
+.dot-progress {
+  background-color: #D97706;
 }
 
-.kpi-dot-confirmed {
-  background-color: #22C55E;
-}
-
-.kpi-number-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: #06202E;
-  margin-top: 18px;
-  line-height: 1.1;
-  letter-spacing: -0.5px;
+.dot-confirmed {
+  background-color: #059669;
 }
 
 /* Search & Filter Panel */
@@ -8290,10 +8360,8 @@
     padding: 0 20px 48px;
   }
 
-  .referrals-kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-    margin-bottom: 18px;
+  .referrals-metrics-strip {
+    margin-bottom: 14px;
   }
 }
 
@@ -8463,37 +8531,58 @@
     white-space: nowrap;
   }
 
-  /* Compact 2x2 KPI Grid on Mobile */
-  .referrals-kpi-grid {
+  /* Ultra-Compact Metrics Ribbon on Mobile (Single-Row, Saves >70% vertical space) */
+  .referrals-metrics-strip {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .referrals-kpi-card {
-    padding: 12px 14px;
-    border-radius: 12px;
-    background: #FFFFFF;
+    grid-template-columns: repeat(4, 1fr);
+    background-color: #FFFFFF;
     border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    margin-bottom: 12px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
   }
 
-  .kpi-title-row {
-    font-size: 11.5px;
-    font-weight: 600;
-    color: #64748B;
-    margin-bottom: 4px;
+  .metric-segment {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 4px 9px;
+    text-align: center;
+    min-width: 0;
+  }
+
+  .metric-segment.active::after {
+    left: 4px;
+    right: 4px;
+    height: 2px;
+  }
+
+  .metric-seg-label-group {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    justify-content: center;
   }
 
-  .kpi-number-value {
-    font-size: 20px;
+  .metric-seg-label {
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .metric-seg-val {
+    font-size: 15px;
     font-weight: 800;
-    color: #0F172A;
-    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .metric-seg-dot {
+    width: 6px;
+    height: 6px;
   }
 
   /* Mobile Search & Filter Panel */

@@ -397,38 +397,47 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
           </div>
         </div>
 
-        {/* Attached Document & Safety Verification Row */}
-        <div className="clinician-auth-footer-row">
-          <div
-            className="review-document-pill-executive interactive-doc-pill"
-            onClick={() => setIsPreviewDocOpen(true)}
-            title="Click to view and preview Clinical_Requisition_Order.pdf"
-          >
-            <div className="doc-pill-left">
-              <div className="doc-pdf-icon-wrap">
-                <FileText size={18} />
+        {/* Attached Requisition Document Card (Executive Redesign - Clean & Uncluttered) */}
+        <div className="requisition-doc-executive-card">
+          <div className="req-doc-main-row">
+            <div className="req-doc-identity-group">
+              <div className="req-doc-pdf-icon-badge">
+                <FileText size={20} />
+                <span className="pdf-tag">PDF</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span className="review-doc-name">{documentName}</span>
-                <span style={{ fontSize: '11.5px', color: '#64748B' }}>1.2 MB • Digitally Signed & Sealed Requisition</span>
+              <div className="req-doc-text-block">
+                <div className="req-doc-title-row">
+                  <span className="req-doc-filename">{documentName}</span>
+                  <span className="req-doc-bound-pill">
+                    <CheckCircle2 size={11} />
+                    <span>Bound to Referral</span>
+                  </span>
+                </div>
+                <span className="req-doc-meta-sub">
+                  1.2 MB • Official 1-Page A4 Requisition Order • Digitally Sealed
+                </span>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="doc-verified-badge">Bound to Referral</span>
-              <span className="btn-preview-doc-chip">
-                <Eye size={13} />
-                <span>View Requisition</span>
-              </span>
-            </div>
+
+            <button
+              type="button"
+              className="btn-view-requisition-action"
+              onClick={() => setIsPreviewDocOpen(true)}
+              title="Click to view and preview Clinical_Requisition_Order.pdf"
+            >
+              <Eye size={14} />
+              <span>View Requisition</span>
+            </button>
           </div>
 
-          <div className="clinician-safety-checks-strip">
-            <div className="safety-check-item">
-              <CheckCircle2 size={13} className="text-emerald" />
+          <div className="req-doc-security-footer">
+            <div className="req-doc-sec-item">
+              <CheckCircle2 size={12} className="text-emerald" />
               <span>MDCN Practitioner Registration Validated</span>
             </div>
-            <div className="safety-check-item">
-              <CheckCircle2 size={13} className="text-emerald" />
+            <div className="req-doc-sec-bullet">•</div>
+            <div className="req-doc-sec-item">
+              <CheckCircle2 size={12} className="text-emerald" />
               <span>Electronic PACS Dispatch Authorized</span>
             </div>
           </div>

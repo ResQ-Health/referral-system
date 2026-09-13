@@ -5953,70 +5953,157 @@
   font-weight: 500;
 }
 
-.review-document-pill-executive {
+/* ==========================================================================
+   Executive Clinical Requisition Order Card (Clean, Uncluttered & Distinct)
+   ========================================================================== */
+.requisition-doc-executive-card {
+  margin-top: 18px;
+  background-color: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.requisition-doc-executive-card:hover {
+  border-color: #CBD5E1;
+  background-color: #FFFFFF;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+}
+
+.req-doc-main-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #F8FAFC;
-  border: 1.5px solid #E2E8F0;
-  border-radius: 10px;
-  padding: 10px 14px;
-  transition: all 0.18s ease;
+  gap: 16px;
 }
 
-.review-document-pill-executive.interactive-doc-pill {
-  cursor: pointer;
-}
-
-.review-document-pill-executive.interactive-doc-pill:hover {
-  border-color: #06202E;
-  background-color: #F1F5F9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(6, 32, 46, 0.08);
-}
-
-.btn-preview-doc-chip {
-  display: inline-flex;
+.req-doc-identity-group {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  background-color: #06202E;
-  color: #FFFFFF;
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 6px;
-  transition: background-color 0.15s ease;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
 }
 
-.review-document-pill-executive.interactive-doc-pill:hover .btn-preview-doc-chip {
-  background-color: #0A7E64;
+.req-doc-pdf-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+  border: 1px solid #A7F3D0;
+  color: #0A7E64;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 1px;
 }
 
-.doc-pill-left {
+.req-doc-pdf-icon-badge .pdf-tag {
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #0A7E64;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.req-doc-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.req-doc-title-row {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
-.review-doc-icon {
-  color: #0A7E64;
-  flex-shrink: 0;
-}
-
-.review-doc-name {
-  font-size: 13px;
-  font-weight: 600;
+.req-doc-filename {
+  font-size: 14px;
+  font-weight: 700;
   color: #06202E;
+  letter-spacing: -0.2px;
+  word-break: break-word;
 }
 
-.doc-verified-badge {
+.req-doc-bound-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
-  font-weight: 600;
-  color: #0A7E64;
-  background-color: #ECFDF5;
-  border: 1px solid #A7F3D0;
-  padding: 2px 7px;
+  font-weight: 700;
+  color: #0F766E;
+  background-color: #F0FDFA;
+  border: 1px solid #CCFBF1;
+  padding: 2px 8px;
   border-radius: 999px;
+  white-space: nowrap;
+}
+
+.req-doc-meta-sub {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.btn-view-requisition-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #06202E 0%, #0F3B52 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(6, 32, 46, 0.16);
+  transition: all 0.18s ease;
+}
+
+.btn-view-requisition-action:hover {
+  background: linear-gradient(135deg, #0D9488 0%, #0A7E64 100%);
+  box-shadow: 0 3px 8px rgba(13, 148, 136, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-view-requisition-action:active {
+  transform: translateY(0);
+}
+
+.req-doc-security-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #EDF2F7;
+  flex-wrap: wrap;
+}
+
+.req-doc-sec-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.req-doc-sec-bullet {
+  color: #CBD5E1;
+  font-size: 10px;
 }
 
 /* ==========================================================================
@@ -10498,6 +10585,42 @@
     width: 100% !important;
     justify-content: center !important;
     height: 46px !important;
+  }
+
+  /* Requisition Document Executive Card Mobile Responsive */
+  .requisition-doc-executive-card {
+    padding: 12px 14px !important;
+    gap: 12px !important;
+  }
+
+  .req-doc-main-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .req-doc-identity-group {
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .btn-view-requisition-action {
+    width: 100% !important;
+    justify-content: center !important;
+    height: 38px !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+  }
+
+  .req-doc-security-footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding-top: 8px !important;
+  }
+
+  .req-doc-sec-bullet {
+    display: none !important;
   }
 
   /* Requisition Document Preview Modal Fullscreen on Mobile */

@@ -131,19 +131,29 @@ export const ReferralReview: React.FC<ReferralReviewProps> = ({
             <button
               type="button"
               className="market-nav-step-pill active"
+              title="Step 1: Referral Summary & Clinical Details"
             >
               <span className="step-pill-number">1</span>
-              <span className="step-pill-text">Referral Summary</span>
+              <span className="step-pill-text">Summary</span>
             </button>
             <div className="market-stepper-line" />
             <button
               type="button"
               className="market-nav-step-pill"
               onClick={onProceedToBooking || onProceed}
-              title="Proceed to Provider Selection"
+              title="Proceed to Step 2: Diagnostic Provider Selection"
             >
               <span className="step-pill-number">2</span>
-              <span className="step-pill-text">Select Provider</span>
+              <span className="step-pill-text">Provider</span>
+            </button>
+            <div className="market-stepper-line" />
+            <button
+              type="button"
+              className="market-nav-step-pill disabled"
+              title="Step 3: Booking Summary"
+            >
+              <span className="step-pill-number">3</span>
+              <span className="step-pill-text">Booking</span>
             </button>
           </nav>
         </div>

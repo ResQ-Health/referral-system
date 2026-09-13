@@ -553,11 +553,12 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
               type="button"
               className={`market-nav-step-pill ${activeMarketTab === 'referral' ? 'active' : 'completed'}`}
               onClick={() => setActiveMarketTab('referral')}
+              title="Step 1: Referral Summary"
             >
-              <span className="step-pill-number">1</span>
-              <span className="step-pill-text">Referral Summary</span>
+              <span className="step-pill-number">{activeMarketTab === 'marketplace' ? '✓' : '1'}</span>
+              <span className="step-pill-text">Summary</span>
             </button>
-            <div className="market-stepper-line" />
+            <div className={`market-stepper-line ${activeMarketTab === 'marketplace' ? 'active' : ''}`} />
             <button
               type="button"
               className={`market-nav-step-pill ${activeMarketTab === 'marketplace' ? 'active' : ''}`}
@@ -565,9 +566,19 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
                 setActiveMarketTab('marketplace');
                 setIsSlotModalOpen(false);
               }}
+              title="Step 2: Select Provider"
             >
               <span className="step-pill-number">2</span>
-              <span className="step-pill-text">Select Provider</span>
+              <span className="step-pill-text">Provider</span>
+            </button>
+            <div className="market-stepper-line" />
+            <button
+              type="button"
+              className="market-nav-step-pill disabled"
+              title="Step 3: Booking Summary (Select a slot to proceed)"
+            >
+              <span className="step-pill-number">3</span>
+              <span className="step-pill-text">Booking</span>
             </button>
           </nav>
         </div>

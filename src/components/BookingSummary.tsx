@@ -84,9 +84,9 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
               type="button"
               className="market-nav-step-pill completed"
               onClick={onBackToMarketplace}
-              title="Return to Referral Summary"
+              title="Return to Step 1: Referral Summary"
             >
-              <span className="step-pill-number">1</span>
+              <span className="step-pill-number">✓</span>
               <span className="step-pill-text">Summary</span>
             </button>
             <div className="market-stepper-line completed" />
@@ -94,18 +94,19 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
               type="button"
               className="market-nav-step-pill completed"
               onClick={onBackToMarketplace}
-              title="Return to Diagnostic Provider Selection"
+              title="Return to Step 2: Diagnostic Provider Selection"
             >
-              <span className="step-pill-number">2</span>
+              <span className="step-pill-number">✓</span>
               <span className="step-pill-text">Provider</span>
             </button>
             <div className="market-stepper-line active" />
             <button
               type="button"
               className="market-nav-step-pill active"
+              title="Step 3: Booking Summary & Final Submission"
             >
               <span className="step-pill-number">3</span>
-              <span className="step-pill-text">Booking Summary</span>
+              <span className="step-pill-text">Booking</span>
             </button>
           </nav>
         </div>

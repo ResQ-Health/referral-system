@@ -1,5 +1,6 @@
 import { Referral } from '../models/Referral.js';
 import { sendPatientReferralEmail } from '../config/mailer.js';
+import { syncReferralToPatientApp, confirmPatientAppBooking } from '../services/patientSyncService.js';
 
 // Helper: Generate unique referral ID: REF-YYYYMMDD-XXXXX
 const generateReferralId = () => {
@@ -84,6 +85,24 @@ export const createReferral = async (req, res) => {
     });
 
     const saved = await newReferral.save();
+
+    // Sync booking with Patient Client API (server-16pz.onrender.com)
+    try {
+      const syncResult = await syncReferralToPatientApp(saved);
+      saved.patientSyncStatus = syncResult.patientSyncStatus;
+      if (syncResult.patientAppointmentId) {
+        saved.patientAppointmentId = syncResult.patientAppointmentId;
+      }
+      if (syncResult.error) {
+        saved.patientSyncError = syncResult.error;
+      }
+      await saved.save();
+    } catch (syncErr) {
+      console.warn('Patient API sync warning:', syncErr.message);
+      saved.patientSyncStatus = 'Failed';
+      saved.patientSyncError = syncErr.message;
+      await saved.save().catch(() => null);
+    }
 
     // If patient email is provided, send notification email
     if (effectivePatientEmail) {
@@ -223,6 +242,13 @@ export const payReferral = async (req, res) => {
     };
 
     await referral.save();
+
+    // Confirm booking on Patient Client API
+    try {
+      await confirmPatientAppBooking(referral, { paymentMethod, reference });
+    } catch (confirmErr) {
+      console.warn('Patient API booking confirmation warning:', confirmErr.message);
+    }
 
     return res.status(200).json({
       success: true,

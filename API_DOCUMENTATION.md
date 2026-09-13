@@ -570,7 +570,7 @@ curl -X POST http://localhost:6000/api/referrals \
 ```json
 {
   "success": true,
-  "message": "Referral created successfully and patient notified",
+  "message": "Referral created and patient notification dispatched successfully",
   "referral": {
     "_id": "670c79f12a...",
     "referralId": "REF-918234",
@@ -583,6 +583,8 @@ curl -X POST http://localhost:6000/api/referrals \
     "status": "Submitted",
     "paymentStatus": "Pending",
     "referralLink": "http://localhost:5173/patient/checkout/REF-918234",
+    "patientAppointmentId": "APT-918234",
+    "patientSyncStatus": "Synced",
     "createdAt": "2026-09-12T22:30:00.000Z"
   }
 }

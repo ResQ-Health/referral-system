@@ -129,6 +129,19 @@ const referralSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    patientAppointmentId: {
+      type: String,
+      default: '',
+    },
+    patientSyncStatus: {
+      type: String,
+      enum: ['Pending', 'Synced', 'Failed'],
+      default: 'Pending',
+    },
+    patientSyncError: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

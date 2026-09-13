@@ -16,7 +16,7 @@ export interface AuthResponse {
   email?: string;
 }
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export async function apiRegister(data: RegistrationData): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE}/auth/register`, {

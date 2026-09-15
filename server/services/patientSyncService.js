@@ -87,12 +87,21 @@ export const buildPatientBookingPayload = (referral) => {
     (referral.scanType && referral.scanType.length === 10 && !referral.scanType.includes(' ') ? referral.scanType : '') ||
     'P7S_Vf3fBt';
 
+  const scanName = referral.serviceName || (referral.scanType
+    ? `${referral.scanType}${referral.bodyPart ? ` (${referral.bodyPart})` : ''}`
+    : 'Diagnostic Scan');
+  const exactAmount = Number(referral.facilityPrice || referral.price || referral.amount || 0);
+
   return {
     providerId: effectiveProviderId,
     serviceId: effectiveServiceId,
-    price: referral.facilityPrice || 0,
-    amount: referral.facilityPrice || 0,
-    facilityPrice: referral.facilityPrice || 0,
+    serviceName: scanName,
+    scanType: referral.scanType || '',
+    bodyPart: referral.bodyPart || '',
+    facilityName: referral.facilityName || '',
+    price: exactAmount,
+    amount: exactAmount,
+    facilityPrice: exactAmount,
     date,
     start_time: startTime,
     end_time: endTime,
@@ -100,7 +109,15 @@ export const buildPatientBookingPayload = (referral) => {
       forWhom: 'Other',
       visitedBefore: false,
       identificationNumber: referral.referralId || '',
-      comments: `Referral #${referral.referralId} - ${referral.scanType} (${referral.bodyPart}). Note: ${referral.clinicalNote || 'N/A'}`,
+      referralId: referral.referralId || '',
+      serviceName: scanName,
+      scanType: referral.scanType || '',
+      bodyPart: referral.bodyPart || '',
+      facilityName: referral.facilityName || '',
+      facilityPrice: exactAmount,
+      price: exactAmount,
+      amount: exactAmount,
+      comments: `Referral #${referral.referralId} - ${scanName}. Note: ${referral.clinicalNote || 'N/A'}`,
       communicationPreference: 'Both',
       patientName: referral.patientName || '',
       patientEmail: referral.patientEmail || '',
@@ -201,12 +218,21 @@ export const bookClinicianAppointment = async (referral, clinicianToken) => {
     referral.clinicalNote ||
     `Referral #${referral.referralId} from ${referral.doctorName || 'Doctor'} (${referral.doctorSpecialty || 'Specialist'}) at ${referral.doctorPractice || 'Medical Center'}. Scan: ${referral.scanType || 'Diagnostic Scan'} - ${referral.bodyPart || 'Standard'}. Priority: ${referral.priority || 'Routine'}.`;
 
+  const scanName = referral.serviceName || (referral.scanType
+    ? `${referral.scanType}${referral.bodyPart ? ` (${referral.bodyPart})` : ''}`
+    : 'Diagnostic Scan');
+  const exactAmount = Number(referral.facilityPrice || referral.price || referral.amount || 0);
+
   const payload = {
     providerId: effectiveProviderId,
     serviceId: effectiveServiceId,
-    price: referral.facilityPrice || 0,
-    amount: referral.facilityPrice || 0,
-    facilityPrice: referral.facilityPrice || 0,
+    serviceName: scanName,
+    scanType: referral.scanType || '',
+    bodyPart: referral.bodyPart || '',
+    facilityName: referral.facilityName || '',
+    price: exactAmount,
+    amount: exactAmount,
+    facilityPrice: exactAmount,
     date,
     start_time: startTime,
     end_time: endTime,
@@ -218,6 +244,16 @@ export const bookClinicianAppointment = async (referral, clinicianToken) => {
     formData: {
       patientEmail: referral.patientEmail || '',
       clinicianEmail: referral.doctorEmail || '',
+      serviceName: scanName,
+      scanType: referral.scanType || '',
+      bodyPart: referral.bodyPart || '',
+      facilityName: referral.facilityName || '',
+      facilityPrice: exactAmount,
+      price: exactAmount,
+      amount: exactAmount,
+      referralId: referral.referralId || '',
+      identificationNumber: referral.referralId || '',
+      comments: `Referral #${referral.referralId} - ${scanName}. Note: ${referral.clinicalNote || referral.notes || 'N/A'}`,
       ...(referral.formData && typeof referral.formData === 'object' ? referral.formData : {}),
     },
   };

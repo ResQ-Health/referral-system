@@ -116,11 +116,30 @@ export const createReferral = async (req, res) => {
     if (isDirectBooking) {
       // Direct clinician booking with designated facility and slot
       try {
+        const scanTitle = saved.scanType && saved.bodyPart
+          ? `${saved.scanType} (${saved.bodyPart})`
+          : (saved.scanType || 'Diagnostic Scan');
+        const exactPrice = Number(saved.facilityPrice) || 0;
+
         const bookingData = {
           ...saved.toObject(),
           patientId,
+          serviceName: scanTitle,
+          price: exactPrice,
+          amount: exactPrice,
+          facilityPrice: exactPrice,
           notes: notes || clinicalNote,
-          formData,
+          formData: {
+            serviceName: scanTitle,
+            scanType: saved.scanType || '',
+            bodyPart: saved.bodyPart || '',
+            facilityName: saved.facilityName || '',
+            facilityPrice: exactPrice,
+            price: exactPrice,
+            amount: exactPrice,
+            referralId: saved.referralId || '',
+            ...(formData && typeof formData === 'object' ? formData : {}),
+          },
         };
         let clinicianBookResult = await bookClinicianAppointment(bookingData, clinicianAuthToken);
 

@@ -81,8 +81,11 @@ export const PatientBookingPayment: React.FC<PatientBookingPaymentProps> = ({
       setReferral(res.referral);
       setIsPaying(false);
       if (onAddToast) {
-        onAddToast('success', 'Payment Successful!', 'Your booking has been confirmed.');
+        onAddToast('success', 'Payment Successful!', 'Your booking has been confirmed. Redirecting to booking history...');
       }
+      setTimeout(() => {
+        window.location.href = 'http://localhost:5174/booking-history';
+      }, 1500);
     } catch (err: any) {
       setIsPaying(false);
       if (onAddToast) {
@@ -120,7 +123,7 @@ export const PatientBookingPayment: React.FC<PatientBookingPaymentProps> = ({
     );
   }
 
-  const isAlreadyPaid = referral.paymentStatus === 'Paid' || referral.status === 'Confirmed';
+  const isAlreadyPaid = referral.paymentStatus === 'Paid' || referral.status === 'Confirmed' || referral.status === 'Completed';
   const priceDisplay = referral.facilityPrice && referral.facilityPrice > 0
     ? `₦${referral.facilityPrice.toLocaleString()}`
     : '₦125,000';
@@ -238,7 +241,7 @@ export const PatientBookingPayment: React.FC<PatientBookingPaymentProps> = ({
                 <div className="summary-card-header">
                   <span className="card-label-small">FACILITY & APPOINTMENT</span>
                   <span className="facility-status-badge">
-                    {referral.status === 'Confirmed' ? 'Confirmed' : 'Pending Payment'}
+                    {referral.status === 'Confirmed' || referral.status === 'Completed' ? 'Confirmed' : 'Pending Payment'}
                   </span>
                 </div>
 
@@ -293,6 +296,19 @@ export const PatientBookingPayment: React.FC<PatientBookingPaymentProps> = ({
                       <Printer size={16} />
                       <span>Print Confirmation Receipt</span>
                     </button>
+                    <a
+                      href="http://localhost:5174/booking-history"
+                      className="btn-print-receipt"
+                      style={{
+                        background: '#0D9488',
+                        color: '#ffffff',
+                        textDecoration: 'none',
+                        textAlign: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <span>Go to Booking History (Patient Portal)</span>
+                    </a>
                   </div>
                 </div>
               ) : (

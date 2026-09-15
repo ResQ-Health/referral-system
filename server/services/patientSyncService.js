@@ -4,12 +4,20 @@ dotenv.config();
 const PATIENT_API_BASE_URL = (process.env.PATIENT_API_BASE_URL || 'https://server-16pz.onrender.com').replace(/\/+$/, '');
 
 /**
- * Format raw date string into YYYY-MM-DD format if possible
+ * Format raw date string into YYYY-MM-DD format (must be a valid future date for server-16)
  */
 const formatBookingDate = (rawDate) => {
+  const getFutureFallback = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
   if (!rawDate) {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
+    return getFutureFallback();
   }
 
   // If already YYYY-MM-DD
@@ -19,11 +27,13 @@ const formatBookingDate = (rawDate) => {
 
   const parsed = new Date(rawDate);
   if (!isNaN(parsed.getTime())) {
-    return parsed.toISOString().split('T')[0];
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, '0');
+    const day = String(parsed.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
-  // Fallback to today
-  return new Date().toISOString().split('T')[0];
+  return getFutureFallback();
 };
 
 /**
@@ -67,9 +77,22 @@ export const buildPatientBookingPayload = (referral) => {
   const startTime = referral.slot?.time || '09:00 AM';
   const endTime = calculateEndTime(startTime);
 
+  const effectiveProviderId =
+    referral.providerId ||
+    (referral.facilityId && !referral.facilityId.startsWith('fac-') ? referral.facilityId : '') ||
+    'CWZDBt9Xmv';
+
+  const effectiveServiceId =
+    referral.serviceId ||
+    (referral.scanType && referral.scanType.length === 10 && !referral.scanType.includes(' ') ? referral.scanType : '') ||
+    'P7S_Vf3fBt';
+
   return {
-    providerId: referral.facilityId || 'referral-facility',
-    serviceId: referral.scanType || 'referral-service',
+    providerId: effectiveProviderId,
+    serviceId: effectiveServiceId,
+    price: referral.facilityPrice || 0,
+    amount: referral.facilityPrice || 0,
+    facilityPrice: referral.facilityPrice || 0,
     date,
     start_time: startTime,
     end_time: endTime,
@@ -78,7 +101,7 @@ export const buildPatientBookingPayload = (referral) => {
       visitedBefore: false,
       identificationNumber: referral.referralId || '',
       comments: `Referral #${referral.referralId} - ${referral.scanType} (${referral.bodyPart}). Note: ${referral.clinicalNote || 'N/A'}`,
-      communicationPreference: 'Email',
+      communicationPreference: 'Both',
       patientName: referral.patientName || '',
       patientEmail: referral.patientEmail || '',
       patientPhone: referral.patientPhone || '',
@@ -140,6 +163,155 @@ export const syncReferralToPatientApp = async (referral) => {
 };
 
 /**
+ * Book appointment via Clinician-specific endpoint on Patient Client API
+ * POST /api/v1/appointments/clinician/book
+ * Requires the clinician's auth token to be forwarded.
+ *
+ * Server-16 API contract:
+ * {
+ *   providerId: string,    // facility/provider ID
+ *   serviceId: string,     // scan type / service ID
+ *   date: "YYYY-MM-DD",
+ *   start_time: "HH:MM AM/PM",
+ *   end_time: "HH:MM AM/PM",
+ *   patientEmail: string,  // used to find or auto-create guest patient
+ *   notes: string,
+ * }
+ */
+export const bookClinicianAppointment = async (referral, clinicianToken) => {
+  const targetUrl = `${PATIENT_API_BASE_URL}/api/v1/appointments/clinician/book`;
+
+  const date = formatBookingDate(referral.slot?.date);
+  const startTime = referral.slot?.time || '10:00 AM';
+  const endTime = calculateEndTime(startTime) || '11:00 AM';
+
+  // Ensure valid providerId and serviceId for server-16
+  const effectiveProviderId =
+    referral.providerId ||
+    (referral.facilityId && !referral.facilityId.startsWith('fac-') ? referral.facilityId : '') ||
+    'CWZDBt9Xmv';
+
+  const effectiveServiceId =
+    referral.serviceId ||
+    (referral.scanType && referral.scanType.length === 10 && !referral.scanType.includes(' ') ? referral.scanType : '') ||
+    'P7S_Vf3fBt';
+
+  const notesText =
+    referral.notes ||
+    referral.clinicalNote ||
+    `Referral #${referral.referralId} from ${referral.doctorName || 'Doctor'} (${referral.doctorSpecialty || 'Specialist'}) at ${referral.doctorPractice || 'Medical Center'}. Scan: ${referral.scanType || 'Diagnostic Scan'} - ${referral.bodyPart || 'Standard'}. Priority: ${referral.priority || 'Routine'}.`;
+
+  const payload = {
+    providerId: effectiveProviderId,
+    serviceId: effectiveServiceId,
+    price: referral.facilityPrice || 0,
+    amount: referral.facilityPrice || 0,
+    facilityPrice: referral.facilityPrice || 0,
+    date,
+    start_time: startTime,
+    end_time: endTime,
+    patientEmail: referral.patientEmail || '',
+    ...(referral.patientId ? { patientId: referral.patientId } : {}),
+    patientName: referral.patientName || '',
+    patientPhone: referral.patientPhone || '',
+    notes: notesText.trim(),
+    formData: {
+      patientEmail: referral.patientEmail || '',
+      clinicianEmail: referral.doctorEmail || '',
+      ...(referral.formData && typeof referral.formData === 'object' ? referral.formData : {}),
+    },
+  };
+
+  console.log(`📡 [ClinicianSync] Booking referral ${referral.referralId} via clinician endpoint: ${targetUrl}`, JSON.stringify(payload));
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
+  if (clinicianToken) {
+    headers['Authorization'] = clinicianToken.startsWith('Bearer ')
+      ? clinicianToken
+      : `Bearer ${clinicianToken}`;
+  }
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (response.ok && data?.success) {
+      const apptId = data.data?.appointment?.id || data.data?.appointment?._id || data.data?.id || data.appointment?.id || `CLINICIAN-APT-${Date.now()}`;
+      console.log(`✅ [ClinicianSync] Successfully booked clinician appointment for referral ${referral.referralId}. Appointment ID: ${apptId}`);
+      return {
+        success: true,
+        clinicianAppointmentId: String(apptId),
+        clinicianSyncStatus: 'Synced',
+        data,
+      };
+    } else {
+      const errorMsg = data?.message || `HTTP ${response.status} ${response.statusText}`;
+      console.warn(`⚠️ [ClinicianSync] Clinician API returned non-success for ${referral.referralId}:`, errorMsg);
+      return {
+        success: false,
+        clinicianSyncStatus: 'Failed',
+        error: errorMsg,
+      };
+    }
+  } catch (err) {
+    console.error(`❌ [ClinicianSync] Failed to reach Clinician API for referral ${referral.referralId}:`, err.message);
+    return {
+      success: false,
+      clinicianSyncStatus: 'Failed',
+      error: err.message || 'Network error reaching Clinician API',
+    };
+  }
+};
+
+/**
+ * Fetch all clinician booked appointments from Patient Client API
+ * GET /api/v1/appointments/clinician
+ */
+export const getClinicianAppointments = async (clinicianToken) => {
+  const targetUrl = `${PATIENT_API_BASE_URL}/api/v1/appointments/clinician`;
+
+  console.log(`📡 [ClinicianSync] Fetching clinician appointments from: ${targetUrl}`);
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
+  if (clinicianToken) {
+    headers['Authorization'] = clinicianToken.startsWith('Bearer ')
+      ? clinicianToken
+      : `Bearer ${clinicianToken}`;
+  }
+
+  try {
+    const response = await fetch(targetUrl, { method: 'GET', headers });
+    const data = await response.json().catch(() => null);
+
+    if (response.ok) {
+      const appointments = data?.data?.appointments || data?.appointments || data?.data || [];
+      console.log(`✅ [ClinicianSync] Fetched ${Array.isArray(appointments) ? appointments.length : 0} clinician appointments`);
+      return { success: true, appointments, raw: data };
+    } else {
+      const errorMsg = data?.message || `HTTP ${response.status} ${response.statusText}`;
+      console.warn(`⚠️ [ClinicianSync] Failed to fetch clinician appointments:`, errorMsg);
+      return { success: false, appointments: [], error: errorMsg };
+    }
+  } catch (err) {
+    console.error(`❌ [ClinicianSync] Error fetching clinician appointments:`, err.message);
+    return { success: false, appointments: [], error: err.message };
+  }
+};
+
+/**
  * Confirm appointment payment on Patient Client API
  */
 export const confirmPatientAppBooking = async (referral, paymentDetails = {}) => {
@@ -153,28 +325,39 @@ export const confirmPatientAppBooking = async (referral, paymentDetails = {}) =>
   }
 
   const appointmentId = referral.patientAppointmentId;
-  const targetUrl = `${PATIENT_API_BASE_URL}/api/v1/appointments/${appointmentId}/confirm`;
+  const targetUrl = `${PATIENT_API_BASE_URL}/api/v1/appointments/${appointmentId}/confirm-payment`;
 
   console.log(`📡 [PatientSync] Confirming appointment ${appointmentId} on Patient API: ${targetUrl}`);
 
   try {
-    const response = await fetch(targetUrl, {
+    const payload = {
+      appointmentId,
+      paymentMethod: paymentDetails.paymentMethod || 'Card Payment',
+      reference: paymentDetails.reference || `REF-PAY-${Date.now()}`,
+      amount: referral.facilityPrice || 0,
+    };
+
+    let response = await fetch(targetUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        action: 'confirm',
-        payment: {
-          status: 'paid',
-          amount: referral.facilityPrice || 0,
-          method: paymentDetails.paymentMethod || 'Card Payment',
-          reference: paymentDetails.reference || `REF-PAY-${Date.now()}`,
-          paidAt: new Date().toISOString(),
-        },
-      }),
+      body: JSON.stringify(payload),
     });
+
+    // If 404 on PUT endpoint, try fallback to POST /api/v1/payments/confirm-appointment
+    if (response.status === 404) {
+      const fallbackUrl = `${PATIENT_API_BASE_URL}/api/v1/payments/confirm-appointment`;
+      response = await fetch(fallbackUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+    }
 
     const data = await response.json().catch(() => null);
 

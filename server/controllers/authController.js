@@ -230,7 +230,17 @@ export const verifyCode = async (req, res) => {
     await invalidateOtp(normalizedEmail);
 
     const jwtSecret = process.env.JWT_SECRET || 'resq-secret-key-default';
-    const token = jwt.sign({ email: normalizedEmail, id: user._id }, jwtSecret, { expiresIn: '7d' });
+    const token = jwt.sign(
+      {
+        userId: user.id || user._id,
+        id: user._id,
+        email: normalizedEmail,
+        role: 'clinician',
+        user_type: user.user_type || 'Clinician',
+      },
+      jwtSecret,
+      { expiresIn: '7d' }
+    );
 
     res.status(200).json({
       success: true,
@@ -334,7 +344,17 @@ export const login = async (req, res) => {
     }
 
     const jwtSecret = process.env.JWT_SECRET || 'resq-secret-key-default';
-    const token = jwt.sign({ email: normalizedEmail, id: user._id }, jwtSecret, { expiresIn: '7d' });
+    const token = jwt.sign(
+      {
+        userId: user.id || user._id,
+        id: user._id,
+        email: normalizedEmail,
+        role: 'clinician',
+        user_type: user.user_type || 'Clinician',
+      },
+      jwtSecret,
+      { expiresIn: '7d' }
+    );
 
     res.status(200).json({
       success: true,
@@ -407,7 +427,17 @@ export const googleAuth = async (req, res) => {
     }
 
     const jwtSecret = process.env.JWT_SECRET || 'resq-secret-key-default';
-    const token = jwt.sign({ email: normalizedEmail, id: user._id }, jwtSecret, { expiresIn: '7d' });
+    const token = jwt.sign(
+      {
+        userId: user.id || user._id,
+        id: user._id,
+        email: normalizedEmail,
+        role: 'clinician',
+        user_type: user.user_type || 'Clinician',
+      },
+      jwtSecret,
+      { expiresIn: '7d' }
+    );
 
     res.status(200).json({
       success: true,

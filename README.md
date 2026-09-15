@@ -233,6 +233,11 @@ A comprehensive guide to all REST endpoints exposed by the ResQ Healthcare API s
 | **Referrals** | `GET` | `/api/referrals` | Bearer Token | `200`, `401`, `500` | List referrals (filter by `doctorEmail`) |
 | **Referrals** | `GET` | `/api/referrals/:id` | Public (Patient Link) | `200`, `404`, `500` | Get single referral details by ID |
 | **Referrals** | `POST` | `/api/referrals/:id/pay` | Public (Patient Link) | `200`, `400`, `404`, `500` | Complete payment & confirm appointment |
+| **Appointments** | `POST` | `/api/v1/appointments/clinician/book` | Bearer Token (Clinician) | `200`, `400`, `401`, `500` | Clinician books appointment directly into network |
+| **Appointments** | `GET` | `/api/v1/appointments/clinician` | Bearer Token (Clinician) | `200`, `401`, `500` | View all appointments booked by this clinician |
+| **Appointments** | `GET` | `/api/v1/appointments/patient` | Bearer Token (Patient) | `200`, `401`, `500` | View all patient appointments & clinician referrals |
+| **Payments** | `POST` | `/api/v1/payments/initialize` | Bearer Token (Patient) | `200`, `400`, `500` | Initialize patient appointment payment (Paystack) |
+| **Appointments** | `PUT` | `/api/v1/appointments/:id/confirm` | Bearer Token | `200`, `400`, `500` | Confirm appointment & update status to paid |
 
 ---
 
@@ -972,7 +977,252 @@ Processes patient checkout payment for an appointment, updating the requisition 
     }
   }
 }
+---
+
+### 6. Cross-Portal Clinician & Patient Appointment Workflow
+
+The ResQ Healthcare ecosystem features seamless real-time interoperability between two dedicated portals:
+
+1. **Clinician Referral Portal (Port 6000)**: Medical practitioners create clinical requisitions, select diagnostic imaging facilities, and book time-slots on behalf of patients via `http://localhost:6000`.
+2. **Patient Web Application (`Resq-client`) & Server-16 API**: Patients access their personal medical profile, review clinician requisitions, settle diagnostic charges, and download receipts via `https://server-16pz.onrender.com`.
+
+> [!TIP]
+> Complete client integration details, Axios configs, and React Query hooks are documented in the [ResQ Client API Documentation](https://github.com/ResQ-Health/Resq-client/blob/main/CLIENT_API_DOCUMENTATION.md).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Clinician as Clinician (Doctor)
+    participant Port6000 as Clinician Server (:6000)
+    participant Server16 as Patient Core API (server-16)
+    actor Patient as Patient
+
+    Note over Clinician,Port6000: Port 6000 (Clinician Only)
+    Clinician->>Port6000: POST /api/v1/appointments/clinician/book
+    Port6000->>Server16: Forward booking with Bearer <Clinician_JWT>
+    Server16-->>Port6000: Appointment Created (status: "confirmed", payment: "pending")
+    Port6000-->>Clinician: 200 OK — Referral & Appointment Confirmed
+
+    Note over Patient,Server16: Server-16 (Patient Client Application)
+    Patient->>Server16: POST /api/v1/auth/login (patient credentials)
+    Server16-->>Patient: Returns Patient JWT Token
+    Patient->>Server16: GET /api/v1/appointments/patient
+    Server16-->>Patient: Returns Appointments (shows bookedByClinician: true)
+    
+    Note over Patient,Server16: Patient Settle Payment & Status Change
+    Patient->>Server16: POST /api/v1/payments/initialize { appointmentId, callback_url }
+    Server16-->>Patient: Paystack Checkout Authorization URL
+    Patient->>Server16: PUT /api/v1/appointments/:id/confirm { action: "confirm", payment: "paid" }
+    Server16-->>Patient: Appointment status updated to Confirmed & Paid
+    Patient->>Server16: GET /api/v1/payments/receipt/:id (Download PDF Receipt)
 ```
+
+---
+
+#### `POST /api/v1/appointments/clinician/book`
+*(Alias: `POST /api/v1/appointments/clinician-book`)*
+
+Enables an authenticated clinician to book a patient appointment directly into the accredited ResQ diagnostic network.
+
+- **Access**: Authenticated Clinician (Port 6000)
+- **Base URL**: `http://localhost:6000`
+- **Headers**:
+  - `Authorization: Bearer <CLINICIAN_JWT_TOKEN>`
+  - `Content-Type: application/json`
+
+**Request Body Schema**:
+```json
+{
+  "providerId": "CWZDBt9Xmv",
+  "serviceId": "P7S_Vf3fBt",
+  "date": "2026-09-25",
+  "start_time": "10:00 AM",
+  "end_time": "11:00 AM",
+  "patientEmail": "ximor76521@daugr.com",
+  "patientId": "RZRWEqpU2-",
+  "patientName": "Chukwudi Okafor",
+  "patientPhone": "+2348012345678",
+  "notes": "Referral checkup for patient",
+  "formData": {
+    "patientEmail": "ximor76521@daugr.com",
+    "clinicianEmail": "gafey33713@bowlfuel.com"
+  }
+}
+```
+
+> [!NOTE]
+> - `providerId`, `serviceId`, `date`, `start_time`, and `end_time` are strictly required.
+> - If `patientId` is omitted, the backend auto-resolves the user by `patientEmail` (or creates a guest patient record).
+> - `date` must be a valid future date (`YYYY-MM-DD`).
+
+**Success Response (`200 OK`)**:
+```json
+{
+  "success": true,
+  "message": "Appointment successfully booked for patient by clinician",
+  "data": {
+    "appointment": {
+      "id": "M7ejCx_ZxZ",
+      "patient_id": "RZRWEqpU2-",
+      "provider_id": "CWZDBt9Xmv",
+      "clinician_id": "AkKajQg5",
+      "service_id": "P7S_Vf3fBt",
+      "status": "confirmed",
+      "payment": {
+        "status": "pending",
+        "amount": 5000
+      },
+      "appointment_date": "2026-09-25T00:00:00.000Z",
+      "start_time": "10:00 AM",
+      "end_time": "11:00 AM",
+      "notes": "Referral checkup for patient"
+    },
+    "patient": {
+      "id": "RZRWEqpU2-",
+      "name": "Chukwudi Okafor",
+      "email": "ximor76521@daugr.com"
+    },
+    "clinician": {
+      "id": "AkKajQg5",
+      "name": "Dr. Gafey Bowlfuel",
+      "email": "gafey33713@bowlfuel.com"
+    },
+    "provider": {
+      "id": "CWZDBt9Xmv",
+      "name": "Billing Hospital"
+    },
+    "service": {
+      "id": "P7S_Vf3fBt",
+      "name": "Referral Service",
+      "price": 5000
+    }
+  }
+}
+```
+
+---
+
+#### `GET /api/v1/appointments/clinician`
+
+Retrieves all appointments initiated by the currently authenticated clinician across the entire diagnostic network.
+
+- **Access**: Authenticated Clinician (Port 6000)
+- **Base URL**: `http://localhost:6000`
+- **Headers**:
+  - `Authorization: Bearer <CLINICIAN_JWT_TOKEN>`
+
+**Success Response (`200 OK`)**:
+```json
+{
+  "success": true,
+  "data": {
+    "appointments": [
+      {
+        "id": "M7ejCx_ZxZ",
+        "date": "2026-09-25T00:00:00.000Z",
+        "start_time": "10:00 AM",
+        "end_time": "11:00 AM",
+        "status": "confirmed",
+        "payment": {
+          "status": "pending",
+          "amount": 5000
+        },
+        "notes": "Referral checkup for patient",
+        "provider": { "id": "CWZDBt9Xmv", "name": "Billing Hospital" },
+        "patient": { "id": "RZRWEqpU2-", "name": "Chukwudi Okafor", "email": "ximor76521@daugr.com" },
+        "service": { "id": "P7S_Vf3fBt", "name": "Referral Service", "price": 5000 }
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### `GET /api/v1/appointments/patient`
+
+Enables a patient to view all appointments and clinician-referred requisitions assigned to their profile on the patient client application.
+
+- **Access**: Authenticated Patient
+- **Target Host**: `https://server-16pz.onrender.com` (also proxied through `http://localhost:6000/api/v1/appointments/patient`)
+- **Headers**:
+  - `Authorization: Bearer <PATIENT_JWT_TOKEN>`
+
+**Key Response Fields**:
+- `bookedByClinician`: `true` indicates this appointment was booked on the patient's behalf by a referring clinician.
+- `clinician`: Includes referring clinician's `id`, `name`, `email`.
+- `payment.status`: Initially `"pending"` until the patient settles charges online.
+
+**Success Response (`200 OK`)**:
+```json
+{
+  "success": true,
+  "data": {
+    "appointments": [
+      {
+        "id": "M7ejCx_ZxZ",
+        "provider_id": "CWZDBt9Xmv",
+        "provider_name": "Billing Hospital",
+        "patient_id": "RZRWEqpU2-",
+        "clinician_id": "AkKajQg5",
+        "bookedByClinician": true,
+        "clinician": {
+          "id": "AkKajQg5",
+          "name": "Dr. Gafey Bowlfuel",
+          "email": "gafey33713@bowlfuel.com"
+        },
+        "service": {
+          "id": "P7S_Vf3fBt",
+          "name": "Referral Service",
+          "price": 5000
+        },
+        "date": "2026-09-25T00:00:00.000Z",
+        "start_time": "10:00 AM",
+        "end_time": "11:00 AM",
+        "status": "confirmed",
+        "payment": {
+          "status": "pending",
+          "amount": 5000
+        }
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### Patient Payment & Appointment Confirmation Flow
+
+Once an appointment appears on the patient's dashboard with `payment.status: "pending"`:
+
+1. **Initialize Payment (`POST /api/v1/payments/initialize`)**:
+   ```json
+   {
+     "appointmentId": "M7ejCx_ZxZ",
+     "callback_url": "https://client.resqhealth.org/booking/confirmation"
+   }
+   ```
+   Returns Paystack authorization URL for secure checkout.
+
+2. **Confirm Appointment & Change Payment Status (`PUT /api/v1/appointments/:id/confirm`)**:
+   ```json
+   {
+     "action": "confirm",
+     "payment": {
+       "status": "paid",
+       "amount": 5000,
+       "method": "Debit / Credit Card",
+       "reference": "TXN_PAYSTACK_98127391",
+       "paidAt": "2026-09-14T01:35:00.000Z"
+     }
+   }
+   ```
+   Updates appointment status to `confirmed` and `payment.status` to `paid`.
+
+3. **Receipt Retrieval & Dispatch**:
+   - `GET /api/v1/payments/receipt/:id`: Download receipt data / PDF.
+   - `POST /api/v1/payments/receipt/send`: Dispatch transaction receipt to patient email.
 
 ---
 

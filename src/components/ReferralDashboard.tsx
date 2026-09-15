@@ -1411,6 +1411,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       contrastOption: formData.contrastOption || 'Not Specified',
       clinicalNote: formData.clinicalNote,
       facilityId: selectedFacility?.id,
+      providerId: selectedFacility?.providerId || 'CWZDBt9Xmv',
+      serviceId: selectedFacility?.serviceId || 'P7S_Vf3fBt',
       facilityName: facilityNameToUse,
       facilityAddress: selectedFacility?.address,
       facilityPrice: selectedFacility?.price,

@@ -17,6 +17,7 @@ import authRoutes from './routes/authRoutes.js';
 import clinicalRoutes from './routes/clinicalRoutes.js';
 import referralRoutes from './routes/referralRoutes.js';
 import patientRoutes from './routes/patientRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
 import { seedClinicalCatalog } from './config/seedCatalog.js';
 
 // Load environment variables
@@ -59,6 +60,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/clinical', clinicalRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/patients', patientRoutes);
+app.use('/api/v1/appointments', appointmentRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 // 404 Handler for undefined routes
 app.use((req, res) => {

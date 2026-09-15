@@ -145,6 +145,8 @@ export interface ApiReferralItem {
   clinicalNote?: string;
   priority?: string;
   facilityId?: string;
+  providerId?: string;
+  serviceId?: string;
   facilityName?: string;
   facilityAddress?: string;
   facilityPrice?: number;
@@ -158,6 +160,13 @@ export interface ApiReferralItem {
   referralLink?: string;
   createdAt?: string;
   updatedAt?: string;
+  // External API sync fields
+  patientAppointmentId?: string;
+  patientSyncStatus?: string;
+  patientSyncError?: string;
+  clinicianAppointmentId?: string;
+  clinicianSyncStatus?: string;
+  clinicianSyncError?: string;
 }
 
 // Helper: Construct authenticated request headers
@@ -324,3 +333,48 @@ export async function apiUpdateProfile(payload: UpdateProfilePayload): Promise<{
 
   return json;
 }
+
+// ──────────────────────────────────────────────────────────────────
+// Clinician Appointments (proxied from external Patient API)
+// ──────────────────────────────────────────────────────────────────
+
+export interface ClinicianAppointment {
+  _id?: string;
+  id?: string;
+  patientName?: string;
+  patientEmail?: string;
+  scanType?: string;
+  bodyPart?: string;
+  facilityName?: string;
+  slot?: { date?: string; time?: string; display?: string };
+  status?: string;
+  referralId?: string;
+  createdAt?: string;
+  [key: string]: any;
+}
+
+/**
+ * Fetch all clinician booked appointments from the external Patient API
+ * via our backend proxy → GET /api/referrals/clinician-appointments
+ */
+export async function apiGetClinicianAppointments(): Promise<{
+  success: boolean;
+  appointments: ClinicianAppointment[];
+  error?: string;
+}> {
+  try {
+    const res = await fetch(`${API_BASE}/referrals/clinician-appointments`, {
+      headers: getAuthHeaders(false),
+    });
+    const json = await res.json();
+    return {
+      success: json.success ?? res.ok,
+      appointments: json.appointments || [],
+      error: json.error,
+    };
+  } catch (err: any) {
+    console.warn('apiGetClinicianAppointments error:', err.message);
+    return { success: false, appointments: [], error: err.message };
+  }
+}
+

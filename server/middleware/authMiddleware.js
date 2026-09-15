@@ -33,7 +33,7 @@ export const protect = async (req, res, next) => {
 
     // Fallback: Check if token is Firebase ID Token
     const admin = getFirebaseAdmin();
-    if (admin && admin.apps.length > 0) {
+    if (admin && admin.apps?.length > 0) {
       const decodedFirebase = await admin.auth().verifyIdToken(token);
       req.user = await User.findOne({ email: decodedFirebase.email }).select('-password');
       if (req.user && req.user.user_type && req.user.user_type !== 'Clinician') {

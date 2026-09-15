@@ -41,6 +41,8 @@ export interface Facility {
   price: number;
   slotsAvailable: number;
   image: string;
+  providerId?: string;
+  serviceId?: string;
 }
 
 export const SCAN_TYPES = [
@@ -133,6 +135,8 @@ export const BODY_PARTS = [
 export const SAMPLE_FACILITIES: Facility[] = [
   {
     id: 'fac-1',
+    providerId: 'CWZDBt9Xmv',
+    serviceId: 'P7S_Vf3fBt',
     name: 'Phoebe Medical Center',
     address: '24 Adeola Odeku Street, VI Lagos',
     rating: 4.8,
@@ -143,6 +147,8 @@ export const SAMPLE_FACILITIES: Facility[] = [
   },
   {
     id: 'fac-2',
+    providerId: 'CWZDBt9Xmv',
+    serviceId: 'P7S_Vf3fBt',
     name: 'St. Nicholas Diagnostic Centre',
     address: 'Plot 12 Bodija Road, Ibadan',
     rating: 4.7,
@@ -153,6 +159,8 @@ export const SAMPLE_FACILITIES: Facility[] = [
   },
   {
     id: 'fac-3',
+    providerId: 'CWZDBt9Xmv',
+    serviceId: 'P7S_Vf3fBt',
     name: 'Clinix Healthcare Imaging',
     address: '57 Campbell Street, Lagos Island',
     rating: 4.6,
@@ -163,6 +171,8 @@ export const SAMPLE_FACILITIES: Facility[] = [
   },
   {
     id: 'fac-4',
+    providerId: 'CWZDBt9Xmv',
+    serviceId: 'P7S_Vf3fBt',
     name: 'EchoScan Diagnostics Lekki',
     address: 'Admiralty Way, Lekki Phase 1, Lagos',
     rating: 4.9,
@@ -173,6 +183,8 @@ export const SAMPLE_FACILITIES: Facility[] = [
   },
   {
     id: 'fac-5',
+    providerId: 'CWZDBt9Xmv',
+    serviceId: 'P7S_Vf3fBt',
     name: 'Union Diagnostics & Clinical Services',
     address: '293B Akin Olugbade St, VI Lagos',
     rating: 4.5,
@@ -183,6 +195,8 @@ export const SAMPLE_FACILITIES: Facility[] = [
   },
   {
     id: 'fac-6',
+    providerId: 'CWZDBt9Xmv',
+    serviceId: 'P7S_Vf3fBt',
     name: 'Reddington Diagnostic Centre',
     address: '39 Isaac John Street, GRA Ikeja',
     rating: 4.8,

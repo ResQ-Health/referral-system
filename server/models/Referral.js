@@ -85,6 +85,14 @@ const referralSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    providerId: {
+      type: String,
+      default: 'CWZDBt9Xmv',
+    },
+    serviceId: {
+      type: String,
+      default: 'P7S_Vf3fBt',
+    },
     facilityName: {
       type: String,
       default: 'Patient Choice (Open Referral)',
@@ -139,6 +147,20 @@ const referralSchema = new mongoose.Schema(
       default: 'Pending',
     },
     patientSyncError: {
+      type: String,
+      default: '',
+    },
+    // Clinician-side external API sync fields
+    clinicianAppointmentId: {
+      type: String,
+      default: '',
+    },
+    clinicianSyncStatus: {
+      type: String,
+      enum: ['Pending', 'Synced', 'Failed'],
+      default: 'Pending',
+    },
+    clinicianSyncError: {
       type: String,
       default: '',
     },

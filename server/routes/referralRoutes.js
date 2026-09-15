@@ -4,6 +4,7 @@ import {
   getReferrals,
   getReferralById,
   payReferral,
+  getClinicianAppointmentsProxy,
 } from '../controllers/referralController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -13,8 +14,12 @@ const router = express.Router();
 router.post('/', protect, createReferral);
 router.get('/', protect, getReferrals);
 
+// Proxy: get all clinician appointments from external Patient API
+router.get('/clinician-appointments', protect, getClinicianAppointmentsProxy);
+
 // Patient / Public direct referral checkout endpoints
 router.get('/:id', getReferralById);
 router.post('/:id/pay', payReferral);
 
 export default router;
+

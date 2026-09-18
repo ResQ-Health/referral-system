@@ -34,7 +34,6 @@ import {
   FolderClock,
   Bookmark,
   Plus,
-  Lock,
   Edit2,
   ShieldCheck,
   Mail,
@@ -374,9 +373,9 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   onAddToast,
   onUpdateUser,
 }) => {
-  // Initialize tab: Overview is the first tab unless user specifically visited /clinician/dashboard/referral/
+  // Initialize tab: Overview is the first tab on login unless user specifically navigated to /clinician/dashboard/referral/
   const [activeTab, setActiveTab] = useState<'overview' | 'referrals' | string>(() => {
-    if (typeof window !== 'undefined' && window.location.pathname.includes('/referral')) {
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/clinician/dashboard/referral')) {
       return 'referrals';
     }
     return 'overview';
@@ -435,7 +434,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
   // Modal navigation state: 'none' | 'choose-type' | 'choose-draft' | 'choose-existing' | 'patient-info' | 'scan-details' | 'scan-location'
   const [modalStep, setModalStep] = useState<'none' | 'choose-type' | 'choose-draft' | 'choose-existing' | 'patient-info' | 'scan-details' | 'scan-location'>('none');
-  const [scanLocationMode, setScanLocationMode] = useState<'provider' | 'patient-choice' | null>(null);
+  const [scanLocationMode, setScanLocationMode] = useState<'provider' | 'patient-choice' | null>('provider');
   const [dashboardView, setDashboardView] = useState<'dashboard' | 'referral-review' | 'marketplace' | 'booking-summary' | 'submitted-success'>('dashboard');
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string; display: string }>({
@@ -869,9 +868,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   };
 
   useEffect(() => {
-    if (activeTab === 'referrals') {
-      if (!window.location.pathname.includes('/clinician/dashboard/referral/')) {
-        window.history.pushState(null, '', '/clinician/dashboard/referral/');
+    if (typeof window !== 'undefined') {
+      if (activeTab === 'referrals') {
+        if (!window.location.pathname.includes('/clinician/dashboard/referral/')) {
+          window.history.pushState(null, '', '/clinician/dashboard/referral/');
+        }
+      } else if (activeTab === 'overview') {
+        if (!window.location.pathname.includes('/clinician/dashboard/overview/')) {
+          window.history.pushState(null, '', '/clinician/dashboard/overview/');
+        }
       }
     }
   }, [activeTab]);
@@ -1642,10 +1647,6 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             >
               <Menu size={22} />
             </button>
-            <div className="mobile-header-brand-wrap">
-              <img src="/logo.png" alt="ResQ" className="mobile-header-logo" />
-              <span className="mobile-header-brand-title">ResQ</span>
-            </div>
             <h1 className="header-page-title">
               {activeTab === 'referrals' ? 'Referral Lists' : 'Overview'}
             </h1>
@@ -1785,18 +1786,18 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
               </div>
 
               <div className="profile-details-grid">
-                <div className="profile-field-box locked-field-box">
+                <div className="profile-field-box">
                   <div className="profile-field-label">
                     <span>Email Address</span>
-                    <span className="locked-tag">
-                      <Lock size={11} /> Locked
+                    <span className="verified-tag">
+                      <ShieldCheck size={11} /> Verified
                     </span>
                   </div>
-                  <div className="profile-field-value text-locked">
+                  <div className="profile-field-value text-locked" style={{ color: '#64748B' }}>
                     <Mail size={15} className="field-icon" style={{ color: '#64748B' }} />
                     <span>{displayEmail}</span>
                   </div>
-                  <span className="field-hint">Primary login identifier (cannot be changed)</span>
+                  <span className="field-hint">Primary verified login email</span>
                 </div>
 
                 <div className="profile-field-box">
@@ -2001,7 +2002,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                       onClick={() => setModalStep('choose-type')}
                     >
                       <Plus size={15} />
-                      <span>Create referral</span>
+                      <span>Create Referral</span>
                     </button>
                   </div>
                 </div>
@@ -2349,45 +2350,82 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     )}
 
                     {/* Mobile Pagination Controls (Strictly 5 per page) */}
-                    {filteredReferrals.length > 0 && (
+                    {filteredReferrals.length > 0 && totalMobilePages > 1 ? (
                       <div className="mobile-referrals-pagination">
-                        <span className="mobile-pagination-info">
-                          Showing {mobileStartIndex + 1} to {Math.min(mobileEndIndex, filteredReferrals.length)} of {filteredReferrals.length} referrals
-                        </span>
-                        <div className="pagination-controls">
+                        <div className="mobile-pagination-top-bar">
+                          <span className="mobile-pagination-info">
+                            Showing <strong>{mobileStartIndex + 1}–{Math.min(mobileEndIndex, filteredReferrals.length)}</strong> of <strong>{filteredReferrals.length}</strong> referrals
+                          </span>
+                          <span className="mobile-pagination-page-badge">
+                            Page {safeMobilePage} of {totalMobilePages}
+                          </span>
+                        </div>
+
+                        <div className="mobile-pagination-nav-row">
                           <button
                             type="button"
-                            className="page-btn page-arrow-btn"
+                            className="mobile-nav-arrow-btn prev-btn"
                             aria-label="Previous page"
                             disabled={safeMobilePage <= 1}
                             onClick={() => setMobileReferralPage((p) => Math.max(1, p - 1))}
-                            style={{ opacity: safeMobilePage <= 1 ? 0.35 : 1, cursor: safeMobilePage <= 1 ? 'not-allowed' : 'pointer' }}
                           >
-                            <ChevronLeft size={14} />
+                            <ChevronLeft size={16} />
+                            <span>Prev</span>
                           </button>
-                          {Array.from({ length: totalMobilePages }, (_, i) => i + 1).map((pageNum) => (
-                            <button
-                              key={pageNum}
-                              type="button"
-                              className={`page-btn ${safeMobilePage === pageNum ? 'active' : ''}`}
-                              onClick={() => setMobileReferralPage(pageNum)}
-                            >
-                              {pageNum}
-                            </button>
-                          ))}
+
+                          <div className="mobile-page-numbers-group">
+                            {(() => {
+                              let pages: (number | string)[] = [];
+                              if (totalMobilePages <= 5) {
+                                pages = Array.from({ length: totalMobilePages }, (_, i) => i + 1);
+                              } else if (safeMobilePage <= 3) {
+                                pages = [1, 2, 3, '...', totalMobilePages];
+                              } else if (safeMobilePage >= totalMobilePages - 2) {
+                                pages = [1, '...', totalMobilePages - 2, totalMobilePages - 1, totalMobilePages];
+                              } else {
+                                pages = [1, '...', safeMobilePage, '...', totalMobilePages];
+                              }
+
+                              return pages.map((item, idx) => {
+                                if (typeof item === 'string') {
+                                  return (
+                                    <span key={`dots-${idx}`} className="mobile-page-ellipsis">
+                                      …
+                                    </span>
+                                  );
+                                }
+                                return (
+                                  <button
+                                    key={item}
+                                    type="button"
+                                    className={`mobile-number-btn ${safeMobilePage === item ? 'active' : ''}`}
+                                    onClick={() => setMobileReferralPage(item)}
+                                    aria-label={`Go to page ${item}`}
+                                  >
+                                    {item}
+                                  </button>
+                                );
+                              });
+                            })()}
+                          </div>
+
                           <button
                             type="button"
-                            className="page-btn page-arrow-btn"
+                            className="mobile-nav-arrow-btn next-btn"
                             aria-label="Next page"
                             disabled={safeMobilePage >= totalMobilePages}
                             onClick={() => setMobileReferralPage((p) => Math.min(totalMobilePages, p + 1))}
-                            style={{ opacity: safeMobilePage >= totalMobilePages ? 0.35 : 1, cursor: safeMobilePage >= totalMobilePages ? 'not-allowed' : 'pointer' }}
                           >
-                            <ChevronRight size={14} />
+                            <span>Next</span>
+                            <ChevronRight size={16} />
                           </button>
                         </div>
                       </div>
-                    )}
+                    ) : filteredReferrals.length > 0 ? (
+                      <div className="mobile-pagination-single-chip">
+                        Showing all {filteredReferrals.length} referrals
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -3914,15 +3952,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 <div className="summary-text-col">
                   <div className="summary-patient-name-row">
                     <span className="summary-patient-name">{formData.fullName || 'Anthony Odafe'}</span>
-                    <span className="summary-status-tag">Ready for Scheduling</span>
                   </div>
                   <div className="summary-scan-pill-row">
                     <span className="summary-scan-pill">
                       {formData.scanType || 'MRI Scan'}{formData.bodyPart ? ` • ${formData.bodyPart}` : ''}
-                    </span>
-                    <span className="summary-dot">•</span>
-                    <span className="summary-clinician-note">
-                      Clinician: {displayName.toLowerCase().startsWith('dr.') ? displayName : `Dr. ${displayName}`}
                     </span>
                   </div>
                 </div>
@@ -3950,10 +3983,13 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     <div className="location-card-icon-box provider-icon">
                       <Building2 size={20} />
                     </div>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="location-card-text-block">
+                      <div className="location-card-header-row">
                         <h4 className="location-card-heading">Select a provider</h4>
-                        <span className="location-badge-pill clinician-badge">Clinician Choice</span>
+                        <span className="location-badge-pill clinician-badge">
+                          <Check size={11} className="badge-check-icon" />
+                          Clinician Choice
+                        </span>
                       </div>
                       <p className="location-card-sub">
                         I want to choose a specific diagnostic clinic for this patient.
@@ -3978,35 +4014,36 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 </div>
               </div>
 
-              {/* Option 2: Let the patient choose */}
+              {/* Option 2: Let the patient choose (Upcoming - Non-clickable) */}
               <div
-                className={`location-card-modern ${scanLocationMode === 'patient-choice' ? 'selected' : ''}`}
-                onClick={() => setScanLocationMode('patient-choice')}
-                role="radio"
-                aria-checked={scanLocationMode === 'patient-choice'}
+                className="location-card-modern upcoming-card"
+                role="region"
+                aria-disabled="true"
+                tabIndex={-1}
               >
                 <div className="location-card-top">
                   <div className="location-card-icon-title">
-                    <div className="location-card-icon-box patient-icon">
+                    <div className="location-card-icon-box patient-icon" style={{ opacity: 0.75 }}>
                       <Smartphone size={20} />
                     </div>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <h4 className="location-card-heading">Let the patient choose</h4>
-                        <span className="location-badge-pill patient-badge">Self-Scheduling</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <h4 className="location-card-heading" style={{ color: '#475569' }}>Let the patient choose</h4>
+                        <span className="location-badge-pill patient-badge">Patient Scheduling</span>
+                        <span className="location-badge-pill upcoming-badge">Upcoming</span>
                       </div>
-                      <p className="location-card-sub">
+                      <p className="location-card-sub" style={{ color: '#94A3B8' }}>
                         Patient will choose from suitable diagnostic centers near them.
                       </p>
                     </div>
                   </div>
 
-                  <div className="custom-radio-modern">
-                    {scanLocationMode === 'patient-choice' && <span className="custom-radio-modern-dot" />}
+                  <div className="upcoming-status-chip">
+                    <span>Coming Soon</span>
                   </div>
                 </div>
 
-                <div className="location-card-perks">
+                <div className="location-card-perks" style={{ opacity: 0.75 }}>
                   <div className="perk-item">
                     <Check size={14} className="perk-check-icon" />
                     <span>Secure referral link sent via SMS, email & WhatsApp directly to patient</span>
@@ -4062,7 +4099,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                   onClick={handleProceedScanLocation}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 >
-                  <span>Proceed to Facility Marketplace</span>
+                  <span>Proceed</span>
                   <ArrowRight size={15} />
                 </button>
               ) : scanLocationMode === 'patient-choice' ? (
@@ -4122,37 +4159,25 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             </div>
 
             <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* LOCKED EMAIL FIELD - CANNOT BE EDITED */}
+              {/* EMAIL FIELD - READ-ONLY & VERIFIED */}
               <div className="resq-form-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <label className="resq-form-label" style={{ margin: 0, fontSize: '13px', fontWeight: 600 }}>
                     Email Address
                   </label>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      color: '#475569',
-                      backgroundColor: '#E2E8F0',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontWeight: 600,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
-                  >
-                    <Lock size={11} /> Locked / Cannot be modified
+                  <span className="verified-tag">
+                    <ShieldCheck size={11} /> Verified
                   </span>
                 </div>
-                <div className="locked-email-box">
+                <div className="locked-email-box" style={{ background: '#F8FAFC', borderColor: '#E2E8F0', color: '#64748B' }}>
                   <div className="locked-email-left">
                     <Mail size={16} color="#64748B" />
-                    <span>{displayEmail}</span>
+                    <span style={{ color: '#64748B' }}>{displayEmail}</span>
                   </div>
-                  <Lock size={15} color="#94A3B8" />
+                  <ShieldCheck size={16} color="#059669" />
                 </div>
                 <p style={{ margin: '5px 0 0', fontSize: '11.5px', color: '#64748B' }}>
-                  🔒 Your email address is your verified ResQ credential identifier and is strictly protected against alterations.
+                  Primary verified email associated with your ResQ account.
                 </p>
               </div>
 

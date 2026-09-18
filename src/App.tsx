@@ -112,7 +112,7 @@ export function App() {
         setUserEmail(parsed.email);
         setCurrentScreen('dashboard');
         if (!window.location.pathname.includes('/clinician/dashboard')) {
-          window.history.pushState(null, '', '/clinician/dashboard/referral/');
+          window.history.pushState(null, '', '/clinician/dashboard/overview/');
         }
       }
     } catch (_) {}
@@ -121,7 +121,7 @@ export function App() {
   const navigateToScreen = (screen: ActiveScreen) => {
     setCurrentScreen(screen);
     if (screen === 'dashboard') {
-      window.history.pushState(null, '', '/clinician/dashboard/referral/');
+      window.history.pushState(null, '', '/clinician/dashboard/overview/');
     } else {
       window.history.pushState(null, '', '/');
     }

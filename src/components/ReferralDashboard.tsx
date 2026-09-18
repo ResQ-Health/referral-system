@@ -526,7 +526,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   const loadDoctorReferrals = async () => {
     setIsLoadingReferrals(true);
     try {
-      const res = await apiGetReferrals(user.email);
+      const res = await apiGetReferrals();
       if (res.success && Array.isArray(res.referrals)) {
         const mapped: ReferralItem[] = res.referrals.map((r) => ({
           id: r.referralId,
@@ -555,7 +555,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
   useEffect(() => {
     loadDoctorReferrals();
-  }, [user.email]);
+  }, []);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -2168,7 +2168,18 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {referrals.length === 0 ? (
+                        {isLoadingReferrals && referrals.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} style={{ textAlign: 'center', padding: '64px 20px', color: '#64748B' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                                <RotateCw size={26} className="spin-anim" color="#0D9488" />
+                                <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>
+                                  Loading referrals...
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : referrals.length === 0 ? (
                           <tr>
                             <td colSpan={6} style={{ textAlign: 'center', padding: '64px 20px', color: '#64748B' }}>
                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
@@ -2261,7 +2272,14 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
                   {/* Referrals Mobile Cards View (Mobile Only) */}
                   <div className="referrals-mobile-cards-view">
-                    {referrals.length === 0 ? (
+                    {isLoadingReferrals && referrals.length === 0 ? (
+                      <div className="mobile-empty-referrals-card" style={{ padding: '56px 20px' }}>
+                        <RotateCw size={26} className="spin-anim" color="#0D9488" />
+                        <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#475569', marginTop: '10px' }}>
+                          Loading referrals...
+                        </span>
+                      </div>
+                    ) : referrals.length === 0 ? (
                       <div className="mobile-empty-referrals-card">
                         <div className="mobile-empty-icon-circle">
                           <ClipboardList size={30} color="#0D9488" />

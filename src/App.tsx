@@ -36,26 +36,15 @@ export function App() {
 
   const [currentScreen, setCurrentScreen] = useState<ActiveScreen>(() => {
     if (typeof window !== 'undefined') {
-      const isPatientReferral =
-        window.location.pathname.includes('/patient/referral') ||
-        window.location.pathname.includes('/referral/') ||
-        window.location.search.includes('referralId=');
-      if (isPatientReferral) {
-        const match = window.location.pathname.match(/\/patient\/referral\/([^\/]+)/) ||
-                      window.location.pathname.match(/\/referral\/([^\/]+)/);
-        const params = new URLSearchParams(window.location.search);
-        const refId = match?.[1] || params.get('referralId') || params.get('ref') || '';
-        const patientPortalBase = ((import.meta as any).env?.VITE_PATIENT_PORTAL_URL || 'https://resq-client.vercel.app').replace(/\/+$/, '');
-        const targetUrl = refId ? `${patientPortalBase}/?referralId=${encodeURIComponent(refId)}` : patientPortalBase;
-        try {
-          window.location.replace(targetUrl);
-        } catch (_) {
-          window.location.href = targetUrl;
-        }
-        return 'patient-checkout';
-      }
       if (window.location.pathname.includes('/clinician/dashboard')) {
         return 'dashboard';
+      }
+      const isPatientReferral =
+        window.location.pathname.startsWith('/patient/referral') ||
+        (window.location.pathname.startsWith('/referral/') && !window.location.pathname.includes('/clinician')) ||
+        window.location.search.includes('referralId=');
+      if (isPatientReferral) {
+        return 'patient-checkout';
       }
     }
     return 'signin';

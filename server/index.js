@@ -63,13 +63,6 @@ app.use('/api/patients', patientRoutes);
 app.use('/api/v1/appointments', appointmentRoutes);
 app.use('/api/appointments', appointmentRoutes);
 
-// Redirect patient referral requests from clinician server to Patient Portal
-app.get(['/patient/referral/:id', '/referral/:id'], (req, res) => {
-  const patientPortalBase = (process.env.PATIENT_PORTAL_URL || 'https://resq-client.vercel.app').replace(/\/+$/, '');
-  const referralId = req.params.id || '';
-  return res.redirect(302, referralId ? `${patientPortalBase}/?referralId=${encodeURIComponent(referralId)}` : patientPortalBase);
-});
-
 // 404 Handler for undefined routes
 app.use((req, res) => {
   res.status(404).json({ success: false, message: `Route not found: ${req.originalUrl}` });

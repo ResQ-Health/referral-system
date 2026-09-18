@@ -37,19 +37,6 @@ export const PatientBookingPayment: React.FC<PatientBookingPaymentProps> = ({
     nameOnCard: '',
   });
 
-  const patientPortalBase = ((import.meta as any).env?.VITE_PATIENT_PORTAL_URL || 'https://resq-client.vercel.app').replace(/\/+$/, '');
-  const patientPortalUrl = referralId
-    ? `${patientPortalBase}/?referralId=${encodeURIComponent(referralId)}`
-    : patientPortalBase;
-
-  useEffect(() => {
-    // Automatically redirect patient to the official Patient Portal
-    try {
-      window.location.replace(patientPortalUrl);
-    } catch (_) {
-      window.location.href = patientPortalUrl;
-    }
-  }, [patientPortalUrl]);
 
   useEffect(() => {
     let isMounted = true;

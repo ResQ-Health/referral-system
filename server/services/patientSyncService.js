@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-const PATIENT_API_BASE_URL = (process.env.PATIENT_API_BASE_URL || 'https://server-16pz.onrender.com').replace(/\/+$/, '');
+const PATIENT_API_BASE_URL = (process.env.PATIENT_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://resq-client.vercel.app')).replace(/\/+$/, '');
 
 /**
  * Format raw date string into YYYY-MM-DD format (must be a valid future date for server-16)

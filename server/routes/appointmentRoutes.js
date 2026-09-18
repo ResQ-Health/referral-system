@@ -4,7 +4,7 @@ import { bookClinicianAppointment, getClinicianAppointments } from '../services/
 
 const router = express.Router();
 
-const PATIENT_API_BASE_URL = (process.env.PATIENT_API_BASE_URL || 'https://server-16pz.onrender.com').replace(/\/+$/, '');
+const PATIENT_API_BASE_URL = (process.env.PATIENT_API_BASE_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : 'https://resq-client.vercel.app')).replace(/\/+$/, '');
 
 /**
  * Helper to ensure a future date YYYY-MM-DD

@@ -1251,8 +1251,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       const rand = Math.floor(10000 + Math.random() * 90000);
       const refId = `REF-${y}${m}${d}-${rand}`;
 
-      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
-      const referralLink = `${origin}/patient/referral/${refId}`;
+      const patientPortalBase = ((import.meta as any).env?.VITE_PATIENT_PORTAL_URL || 'https://resq-client.vercel.app').replace(/\/+$/, '');
+      const referralLink = `${patientPortalBase}/?referralId=${refId}`;
 
       const newReferral: ReferralItem = {
         id: refId,
@@ -1351,8 +1351,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     const refId = `REF-${y}${m}${d}-${rand}`;
     const facilityNameToUse = selectedFacility?.name || 'Phoebe Medical Center';
 
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
-    const referralLink = `${origin}/patient/referral/${refId}`;
+    const patientPortalBase = ((import.meta as any).env?.VITE_PATIENT_PORTAL_URL || 'https://resq-client.vercel.app').replace(/\/+$/, '');
+    const referralLink = `${patientPortalBase}/?referralId=${refId}`;
 
     const newReferral: ReferralItem = {
       id: refId,

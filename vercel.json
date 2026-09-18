@@ -2,6 +2,18 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/patient/referral/:id*",
+      "destination": "https://resq-client.vercel.app/?referralId=:id*",
+      "permanent": false
+    },
+    {
+      "source": "/referral/:id*",
+      "destination": "https://resq-client.vercel.app/?referralId=:id*",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

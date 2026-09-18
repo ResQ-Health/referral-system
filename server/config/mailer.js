@@ -105,6 +105,11 @@ export const sendPatientReferralEmail = async ({
 
   const formattedPrice = price && price > 0 ? `₦${Number(price).toLocaleString()}` : 'Price determined by facility';
   const effectiveDoctor = doctorName || 'Your Doctor';
+  const patientPortalBase = (process.env.PATIENT_PORTAL_URL || 'https://resq-client.vercel.app').replace(/\/+$/, '');
+  const effectiveReferralLink =
+    referralLink && referralLink.includes('resq-client.vercel.app')
+      ? referralLink
+      : `${patientPortalBase}/?referralId=${referralId}`;
 
   const html = `
     <!DOCTYPE html>
@@ -167,7 +172,7 @@ export const sendPatientReferralEmail = async ({
           </div>
 
           <div class="cta-box">
-            <a href="${referralLink}" class="cta-btn" target="_blank">
+            <a href="${effectiveReferralLink}" class="cta-btn" target="_blank">
               Review Booking & Complete Payment →
             </a>
             <p class="cta-note">
@@ -185,7 +190,7 @@ export const sendPatientReferralEmail = async ({
   `;
 
   if (!transporter) {
-    console.log(`[LOCAL DEV EMAIL] Referral email to: ${toEmail} | Link: ${referralLink}`);
+    console.log(`[LOCAL DEV EMAIL] Referral email to: ${toEmail} | Link: ${effectiveReferralLink}`);
     return { success: true, local: true };
   }
 
@@ -199,7 +204,7 @@ export const sendPatientReferralEmail = async ({
     console.log(`✓ Patient referral email sent to ${toEmail} (ID: ${info.messageId})`);
     return { success: true, info };
   } catch (error) {
-    console.warn(`Could not send patient referral email via Gmail (${error.message}). Link: ${referralLink}`);
+    console.warn(`Could not send patient referral email via Gmail (${error.message}). Link: ${effectiveReferralLink}`);
     return { success: false, error: error.message };
   }
 };

@@ -66,9 +66,9 @@ export const createReferral = async (req, res) => {
     const effectiveDoctorEmail = (doctorEmail || req.user?.email || 'doctor@resqhealth.com').toLowerCase().trim();
     const effectivePatientEmail = (patientEmail || '').toLowerCase().trim();
 
-    // Determine frontend base URL
-    const origin = req.headers.origin || 'http://localhost:5173';
-    const referralLink = `${origin}/patient/referral/${referralId}`;
+    // Determine Patient Portal base URL (directs patient to the patient portal, not the clinician portal)
+    const patientPortalBase = (process.env.PATIENT_PORTAL_URL || 'https://resq-client.vercel.app').replace(/\/+$/, '');
+    const referralLink = `${patientPortalBase}/?referralId=${referralId}`;
 
     const effectiveProviderId = providerId || (facilityId && !facilityId.startsWith('fac-') ? facilityId : 'CWZDBt9Xmv');
     const effectiveServiceId = serviceId || 'P7S_Vf3fBt';

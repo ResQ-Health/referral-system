@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   ArrowRight,
   RotateCcw,
+  Search,
   Users,
   Store,
   FileText,
@@ -321,6 +322,15 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
   const [scanFilter, setScanFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const activeFiltersCount = (scanFilter ? 1 : 0) + (locationFilter ? 1 : 0) + (searchQuery.trim() ? 1 : 0);
+  const hasActiveFilters = activeFiltersCount > 0;
+
+  const handleResetFilters = () => {
+    setScanFilter('');
+    setLocationFilter('');
+    setSearchQuery('');
+  };
 
   const doctorDisplayName = user.fullname?.trim() || 'Enaikele Omoh Kelvin';
   const doctorName = doctorDisplayName.toLowerCase().startsWith('dr.')
@@ -1185,20 +1195,22 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
                   <ArrowLeft size={14} />
                   <span>Back to Referral Summary</span>
                 </button>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div className="marketplace-title-actions-row">
                   <h1 className="marketplace-heading">Select an Accredited Diagnostic Center</h1>
                   <button
                     type="button"
-                    className="btn-market-reset-all"
-                    onClick={() => {
-                      setScanFilter('');
-                      setLocationFilter('');
-                      setSearchQuery('');
-                    }}
-                    title="Reset all filters"
+                    className={`btn-market-reset-all ${hasActiveFilters ? 'is-active' : 'is-idle'}`}
+                    onClick={handleResetFilters}
+                    title={hasActiveFilters ? `Reset ${activeFiltersCount} active filter${activeFiltersCount > 1 ? 's' : ''}` : 'Reset all filters'}
+                    aria-label="Reset all filters"
                   >
-                    <RotateCcw size={13} />
+                    <RotateCcw size={13} className="reset-icon" />
                     <span>Reset</span>
+                    {hasActiveFilters && (
+                      <span className="reset-count-badge">
+                        {activeFiltersCount}
+                      </span>
+                    )}
                   </button>
                 </div>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748B' }}>
@@ -1231,23 +1243,57 @@ export const FacilityMarketplace: React.FC<FacilityMarketplaceProps> = ({
                   <option value="Ibadan">Ibadan</option>
                 </select>
 
-                <input
-                  type="text"
-                  placeholder="Search centers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="market-search-input"
-                />
+                <div className="market-search-wrap">
+                  <Search size={14} className="market-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search centers..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="market-search-input"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className="market-search-clear-btn"
+                      onClick={() => setSearchQuery('')}
+                      title="Clear search"
+                      aria-label="Clear search"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    className="btn-market-reset-all is-active filter-bar-reset-btn"
+                    onClick={handleResetFilters}
+                    title="Clear all active filters"
+                  >
+                    <RotateCcw size={13} className="reset-icon" />
+                    <span>Clear Filters</span>
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Facilities Grid */}
             <div className="facility-cards-grid">
               {filteredFacilities.length === 0 ? (
-                <div style={{ gridColumn: '1 / -1', padding: '48px 24px', textAlign: 'center', backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                  <Store size={36} color="#94A3B8" style={{ marginBottom: '12px' }} />
-                  <h3 style={{ margin: '0 0 6px', color: '#06202E' }}>No diagnostic centers match your filters</h3>
-                  <p style={{ margin: 0, color: '#64748B', fontSize: '13px' }}>Try resetting the search or selecting a different location.</p>
+                <div className="market-empty-state">
+                  <Store size={38} className="market-empty-icon" />
+                  <h3 className="market-empty-title">No diagnostic centers match your filters</h3>
+                  <p className="market-empty-desc">Try resetting your search query or selecting a different modality or location.</p>
+                  <button
+                    type="button"
+                    className="btn-market-empty-reset"
+                    onClick={handleResetFilters}
+                  >
+                    <RotateCcw size={14} />
+                    <span>Reset All Filters</span>
+                  </button>
                 </div>
               ) : (
                 filteredFacilities.map((facility) => (

@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckCircle2, LogOut, User, ShieldCheck, Stethoscope, Building2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, LogOut, User, ShieldCheck, Stethoscope, Building2, X } from 'lucide-react';
 
 interface DashboardProps {
   user: {
@@ -14,6 +14,8 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, onSignOut }) => {
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-card">
@@ -63,13 +65,74 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onSignOut }) => {
           <button
             type="button"
             className="btn-boxed-primary flex-center-gap"
-            onClick={onSignOut}
+            onClick={() => setIsSignOutModalOpen(true)}
           >
             <LogOut size={16} />
             <span>Sign Out</span>
           </button>
         </div>
       </div>
+
+      {isSignOutModalOpen && (
+        <div
+          className="modal-backdrop signout-modal-backdrop"
+          onClick={() => setIsSignOutModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="modal-card-resq signout-confirm-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dashboard-signout-modal-title"
+          >
+            <div className="signout-modal-header">
+              <div className="signout-modal-icon-badge">
+                <LogOut size={22} />
+              </div>
+              <button
+                type="button"
+                className="modal-close-pink-btn"
+                onClick={() => setIsSignOutModalOpen(false)}
+                title="Cancel and close"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="signout-modal-body">
+              <h3 id="dashboard-signout-modal-title" className="signout-modal-title">
+                Sign Out of ResQ?
+              </h3>
+              <p className="signout-modal-desc">
+                Are you sure you want to end your session? You will need to sign in again to access your account.
+              </p>
+            </div>
+
+            <div className="signout-modal-actions">
+              <button
+                type="button"
+                className="btn-signout-cancel"
+                onClick={() => setIsSignOutModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-signout-confirm"
+                onClick={() => {
+                  setIsSignOutModalOpen(false);
+                  onSignOut();
+                }}
+              >
+                <LogOut size={16} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

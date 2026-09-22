@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   LayoutDashboard,
   Calendar,
@@ -18,6 +18,7 @@ import {
   X,
   ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
   ClipboardList,
   Clock,
   Activity,
@@ -41,6 +42,9 @@ import {
   Award,
   Menu,
   AlertCircle,
+  FileEdit,
+  List,
+  Grid,
 } from 'lucide-react';
 import { FacilityMarketplace, SCAN_TYPES, BODY_PARTS, CONTRAST_OPTIONS } from './FacilityMarketplace';
 import type { Facility } from './FacilityMarketplace';
@@ -49,6 +53,9 @@ import { ReferralSuccess } from './ReferralSuccess';
 import { ReferralReview } from './ReferralReview';
 import { RequisitionDocumentModal } from './RequisitionDocumentModal';
 import { SearchableSelect } from './SearchableSelect';
+import { Pagination } from './Pagination';
+import { PaymentsView } from './PaymentsView';
+import { ReportsView } from './ReportsView';
 import {
   apiGetClinicalCatalog,
   apiCreateReferral,
@@ -76,6 +83,7 @@ interface ReferralDashboardProps {
 }
 
 export type ReferralStatus =
+  | 'Draft'
   | 'Confirmed'
   | 'Submitted'
   | 'Booking in Progress'
@@ -96,11 +104,14 @@ export interface ReferralItem {
   hospital?: string;
   bodyPart?: string;
   clinicalNote?: string;
+  isDraft?: boolean;
+  draft?: ReferralDraft;
 }
 
 export const INITIAL_REFERRALS: ReferralItem[] = [];
 
 export const ALL_STATUS_OPTIONS: ReferralStatus[] = [
+  'Draft',
   'Confirmed',
   'Submitted',
   'Booking in Progress',
@@ -228,6 +239,129 @@ export const SAMPLE_DRAFTS: ReferralDraft[] = [
       bodyPart: 'Bilateral Breast Screening',
       clinicalNote: 'Routine annual screening mammography.',
     },
+  },
+];
+
+export const DEFAULT_SAMPLE_REFERRALS: ReferralItem[] = [
+  {
+    id: 'REF-2026-8941',
+    patientName: 'Anthony Odafe',
+    service: 'MRI - Brain MRI (with contrast)',
+    provider: 'EchoScan Diagnostics, Ikeja',
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Confirmed',
+    specialty: 'MRI',
+    hospital: 'EchoScan Diagnostics, Ikeja',
+    bodyPart: 'Brain MRI',
+    clinicalNote: 'Patient reports recurring frontal headaches and light sensitivity. Rule out intracranial pathology.',
+  },
+  {
+    id: 'REF-2026-8942',
+    patientName: 'Sarah Jenkins',
+    service: 'Ultrasound - Thyroid Doppler',
+    provider: 'MeCure Healthcare, Lekki',
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Booking in Progress',
+    specialty: 'Ultrasound',
+    hospital: 'MeCure Healthcare, Lekki',
+    bodyPart: 'Thyroid',
+    clinicalNote: 'Palpable solitary thyroid nodule evaluation with Doppler flow study.',
+  },
+  {
+    id: 'REF-2026-8943',
+    patientName: 'David Adeleke',
+    service: 'X-Ray - Lumbar Spine (AP & Lateral)',
+    provider: 'Clina-Lancet Laboratories, VI',
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Confirmed',
+    specialty: 'X-Ray',
+    hospital: 'Clina-Lancet Laboratories, VI',
+    bodyPart: 'Lumbar Spine',
+    clinicalNote: 'Lower back stiffness after weight training; assess for lumbar compression.',
+  },
+  {
+    id: 'REF-2026-8944',
+    patientName: 'Amara Okonkwo',
+    service: 'CT Scan - Abdomen & Pelvis',
+    provider: 'Euracare Multi-Specialist Hospital',
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Confirmed',
+    specialty: 'CT Scan',
+    hospital: 'Euracare Multi-Specialist Hospital',
+    bodyPart: 'Abdomen & Pelvis',
+    clinicalNote: 'Persistent lower right abdominal discomfort. Rule out acute appendicitis.',
+  },
+  {
+    id: 'REF-2026-8945',
+    patientName: 'Chioma Adeyemi',
+    service: 'MRI - Lumbar Spine Scan',
+    provider: 'Clinix Healthcare, Ilupeju',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Confirmed',
+    specialty: 'MRI',
+    hospital: 'Clinix Healthcare, Ilupeju',
+    bodyPart: 'Lumbar Spine',
+    clinicalNote: 'Radiculopathy radiating to right leg. MRI evaluation for disc herniation.',
+  },
+  {
+    id: 'REF-2026-8946',
+    patientName: 'Emeka Nwosu',
+    service: 'Echocardiogram (Transthoracic TTE)',
+    provider: 'Euracare Multi-Specialist Hospital, VI',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Booking in Progress',
+    specialty: 'Cardiology',
+    hospital: 'Euracare Multi-Specialist Hospital, VI',
+    bodyPart: 'Cardiac',
+    clinicalNote: 'Exertional dyspnea and grade II systolic ejection murmur evaluation.',
+  },
+  {
+    id: 'REF-2026-8947',
+    patientName: 'Zainab Ibrahim',
+    service: 'Pelvic Ultrasound (Transvaginal)',
+    provider: 'EchoScan Diagnostics, Ikeja',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Confirmed',
+    specialty: 'Ultrasound',
+    hospital: 'EchoScan Diagnostics, Ikeja',
+    bodyPart: 'Pelvic',
+    clinicalNote: 'Investigation of irregular menstrual bleeding and lower abdominal pelvic pain.',
+  },
+  {
+    id: 'REF-2026-8948',
+    patientName: 'Fatima Bello',
+    service: 'Mammogram - Bilateral Breast Screening',
+    provider: 'Lagoon Hospitals, Ikoyi',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 4).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Confirmed',
+    specialty: 'Mammogram',
+    hospital: 'Lagoon Hospitals, Ikoyi',
+    bodyPart: 'Bilateral Breast Screening',
+    clinicalNote: 'Routine annual screening mammography with 3D Tomosynthesis.',
+  },
+  {
+    id: 'REF-2026-8949',
+    patientName: 'Chukwuma Eze',
+    service: 'CT Scan - High-Resolution Chest',
+    provider: 'Reddington Hospital, Victoria Island',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Booking in Progress',
+    specialty: 'CT Scan',
+    hospital: 'Reddington Hospital, Victoria Island',
+    bodyPart: 'Chest CT',
+    clinicalNote: 'Persistent non-productive cough post-infection; assess for interstitial changes.',
+  },
+  {
+    id: 'REF-2026-8950',
+    patientName: 'Folake Adebayo',
+    service: 'Ultrasound - Pelvic Ultrasound',
+    provider: 'St. Nicholas Hospital, Lagos Island',
+    date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status: 'Confirmed',
+    specialty: 'Ultrasound',
+    hospital: 'St. Nicholas Hospital, Lagos Island',
+    bodyPart: 'Pelvic',
+    clinicalNote: 'Severe dysmenorrhea and pelvic pain evaluation.',
   },
 ];
 
@@ -373,10 +507,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   onAddToast,
   onUpdateUser,
 }) => {
-  // Initialize tab: Overview is the first tab on login unless user specifically navigated to /clinician/dashboard/referral/
+  // Initialize tab: Overview is the first tab on login unless user specifically navigated to /clinician/dashboard/referral/ etc.
   const [activeTab, setActiveTab] = useState<'overview' | 'referrals' | string>(() => {
-    if (typeof window !== 'undefined' && window.location.pathname.includes('/clinician/dashboard/referral')) {
-      return 'referrals';
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path.includes('/clinician/dashboard/referral')) return 'referrals';
+      if (path.includes('/clinician/dashboard/calendar') || path.includes('/clinician/dashboard/appointments')) return 'calendar';
+      if (path.includes('/clinician/dashboard/patients')) return 'patients';
+      if (path.includes('/clinician/dashboard/payments')) return 'payments';
+      if (path.includes('/clinician/dashboard/reports')) return 'reports';
     }
     return 'overview';
   });
@@ -385,18 +524,21 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     if (activeTab === 'overview') {
       document.title = 'Overview | ResQ Healthcare';
     } else if (activeTab === 'referrals') {
-      document.title = 'Referral Lists | ResQ Healthcare';
-    } else if (activeTab === 'appointments') {
-      document.title = 'Appointments | ResQ Healthcare';
+      document.title = 'ResQ Healthcare';
+    } else if (activeTab === 'appointments' || activeTab === 'calendar') {
+      document.title = 'Calendar & Appointments | ResQ Healthcare';
     } else if (activeTab === 'patients') {
       document.title = 'Patients Directory | ResQ Healthcare';
+    } else if (activeTab === 'payments') {
+      document.title = 'Patient Payments | ResQ Healthcare';
+    } else if (activeTab === 'reports') {
+      document.title = 'Diagnostic & Clinical Reports | ResQ Healthcare';
     } else {
       document.title = 'Clinician Dashboard | ResQ Healthcare';
     }
   }, [activeTab]);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [referrals, setReferrals] = useState<ReferralItem[]>([]);
+  const [referrals, setReferrals] = useState<ReferralItem[]>(() => DEFAULT_SAMPLE_REFERRALS);
   const [isLoadingReferrals, setIsLoadingReferrals] = useState<boolean>(false);
   const [tableSearch, setTableSearch] = useState('');
   const [activeStatusFilters, setActiveStatusFilters] = useState<string[]>([]);
@@ -404,6 +546,67 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   const [isUserFiltered, setIsUserFiltered] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Calendar State
+  const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'agenda'>('month');
+  const [calendarCurrentDate, setCalendarCurrentDate] = useState<Date>(() => new Date());
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date>(() => new Date());
+  const [calendarStatusFilter, setCalendarStatusFilter] = useState<string>('all');
+  const [calendarSearchQuery, setCalendarSearchQuery] = useState<string>('');
+  const [calendarAgendaCurrentPage, setCalendarAgendaCurrentPage] = useState<number>(1);
+  const calendarAgendaPageSize = 8;
+
+  // Patients Page State
+  const [patientTabFilter, setPatientTabFilter] = useState<'all' | 'referred' | 'drafts'>('all');
+  const [patientSearchQuery, setPatientSearchQuery] = useState<string>('');
+  const [patientViewMode, setPatientViewMode] = useState<'cards' | 'table'>('table');
+  const [selectedRequisitionReferral, setSelectedRequisitionReferral] = useState<ReferralItem | null>(null);
+  const [patientCurrentPage, setPatientCurrentPage] = useState<number>(1);
+  const patientPageSize = 8;
+
+  useEffect(() => {
+    setPatientCurrentPage(1);
+  }, [patientTabFilter, patientSearchQuery]);
+
+  useEffect(() => {
+    setCalendarAgendaCurrentPage(1);
+  }, [calendarStatusFilter, calendarSearchQuery]);
+
+  const parseReferralDate = (ref: ReferralItem): Date => {
+    if (!ref.date) return new Date();
+    const parsed = new Date(ref.date);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+    const parts = ref.date.split(/[/-]/);
+    if (parts.length === 3) {
+      const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+      if (!isNaN(d.getTime())) return d;
+    }
+    return new Date();
+  };
+
+  const isSameCalendarDay = (d1: Date, d2: Date): boolean => {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+  };
+
+  const handlePrevMonth = () => {
+    setCalendarCurrentDate(new Date(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCalendarCurrentDate(new Date(calendarCurrentDate.getFullYear(), calendarCurrentDate.getMonth() + 1, 1));
+  };
+
+  const handleToday = () => {
+    const now = new Date();
+    setCalendarCurrentDate(now);
+    setSelectedCalendarDate(now);
+  };
 
   // Saved Referral Drafts List (persisted to localStorage)
   const [savedDrafts, setSavedDrafts] = useState<ReferralDraft[]>(() => {
@@ -544,10 +747,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
           bodyPart: r.bodyPart,
           clinicalNote: r.clinicalNote,
         }));
-        setReferrals(mapped);
+        if (mapped.length > 0) {
+          setReferrals(mapped);
+        } else {
+          setReferrals((prev) => (prev.length > 0 ? prev : DEFAULT_SAMPLE_REFERRALS));
+        }
       }
     } catch (e: any) {
       console.warn('Could not load referrals from DB:', e.message);
+      setReferrals((prev) => (prev.length > 0 ? prev : DEFAULT_SAMPLE_REFERRALS));
     } finally {
       setIsLoadingReferrals(false);
     }
@@ -603,6 +811,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
   // Profile Edit Modal State
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  // Sign Out Confirmation Modal State
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
 
   // Scroll to top whenever a modal opens or changes steps
   useEffect(() => {
@@ -709,6 +919,28 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   } | null>(null);
   const latestLookupEmailRef = useRef<string>('');
 
+  // Track which patient fields are auto-populated from ResQ database to make them immutable
+  const [autoPopulatedFields, setAutoPopulatedFields] = useState<{
+    fullName?: boolean;
+    gender?: boolean;
+    dob?: boolean;
+    email?: boolean;
+    phone?: boolean;
+    address?: boolean;
+  }>({});
+
+  const isFieldAutoPopulated = (fieldName: 'fullName' | 'gender' | 'dob' | 'email' | 'phone' | 'address') => {
+    if (!existingPatientFound) return false;
+    if (autoPopulatedFields[fieldName] !== undefined) {
+      return Boolean(autoPopulatedFields[fieldName]);
+    }
+    // Fallback: If existing patient was found and value is present, treat as auto-populated
+    if (fieldName === 'gender') {
+      return Boolean(formData.gender && formData.gender !== 'Select Gender');
+    }
+    return Boolean(formData[fieldName]?.trim());
+  };
+
   // Fetch registered and previously referred patients from MongoDB on mount
   useEffect(() => {
     let isMounted = true;
@@ -750,6 +982,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       setPatientLookupStatus(null);
       setIsLookingUpPatient(false);
       setExistingPatientFound(false);
+      setAutoPopulatedFields({});
       return;
     }
 
@@ -768,6 +1001,14 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
         address: localMatch.address,
       }));
       setExistingPatientFound(true);
+      setAutoPopulatedFields({
+        fullName: Boolean(localMatch.name?.trim()),
+        gender: Boolean(localMatch.gender?.trim() && localMatch.gender !== 'Select Gender'),
+        dob: Boolean(localMatch.dob?.trim()),
+        email: Boolean(localMatch.email?.trim()),
+        phone: Boolean(localMatch.phone?.trim()),
+        address: Boolean(localMatch.address?.trim()),
+      });
       setIsNewUserAccordionOpen(false);
       setIsExistingAccordionOpen(true);
       setPatientLookupStatus({
@@ -789,37 +1030,48 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
         if (latestLookupEmailRef.current !== clean) return;
         setIsLookingUpPatient(false);
         if (res.success && res.found && res.patient) {
+          const p = res.patient;
           setFormData((prev) => ({
             ...prev,
-            fullName: res.patient!.fullName,
-            gender: res.patient!.gender || prev.gender,
-            dob: res.patient!.dob || prev.dob,
-            email: res.patient!.email || clean,
-            phone: res.patient!.phone || prev.phone,
-            address: res.patient!.address || prev.address,
+            fullName: p.fullName,
+            gender: p.gender || prev.gender,
+            dob: p.dob || prev.dob,
+            email: p.email || clean,
+            phone: p.phone || prev.phone,
+            address: p.address || prev.address,
           }));
           setExistingPatientFound(true);
+          setAutoPopulatedFields({
+            fullName: Boolean(p.fullName?.trim()),
+            gender: Boolean(p.gender?.trim() && p.gender !== 'Select Gender'),
+            dob: Boolean(p.dob?.trim()),
+            email: Boolean((p.email || clean)?.trim()),
+            phone: Boolean(p.phone?.trim()),
+            address: Boolean(p.address?.trim()),
+          });
           setIsNewUserAccordionOpen(false);
           setIsExistingAccordionOpen(true);
           setPatientLookupStatus({
             found: true,
-            name: res.patient.fullName,
-            message: `Auto-filled details for ${res.patient.fullName}`,
+            name: p.fullName,
+            message: `Auto-filled details for ${p.fullName}`,
           });
           if (onAddToast) {
-            onAddToast('success', 'User Found', `Auto-filled personal info for ${res.patient.fullName}`);
+            onAddToast('success', 'User Found', `Auto-filled personal info for ${p.fullName}`);
           }
         } else {
           setExistingPatientFound(false);
+          setAutoPopulatedFields({});
           setPatientLookupStatus({
             found: false,
             message: 'No existing ResQ patient profile found with this email.',
           });
         }
-      } catch (err: any) {
+      } catch {
         if (latestLookupEmailRef.current === clean) {
           setIsLookingUpPatient(false);
           setExistingPatientFound(false);
+          setAutoPopulatedFields({});
         }
       }
     }
@@ -829,6 +1081,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     setExistingUserLookupEmail('');
     setPatientLookupStatus(null);
     setExistingPatientFound(false);
+    setAutoPopulatedFields({});
     setFormData((prev) => ({
       ...prev,
       fullName: '',
@@ -844,16 +1097,22 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        closeModal();
+        if (isSignOutModalOpen) {
+          setIsSignOutModalOpen(false);
+        } else if (isProfileModalOpen) {
+          setIsProfileModalOpen(false);
+        } else {
+          setModalStep('none');
+        }
       }
     };
-    if (modalStep !== 'none') {
+    if (modalStep !== 'none' || isProfileModalOpen || isSignOutModalOpen) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [modalStep]);
+  }, [modalStep, isProfileModalOpen, isSignOutModalOpen]);
 
   // Sync tab changes with requested URL format
   const handleTabChange = (tabId: string) => {
@@ -876,6 +1135,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       } else if (activeTab === 'overview') {
         if (!window.location.pathname.includes('/clinician/dashboard/overview/')) {
           window.history.pushState(null, '', '/clinician/dashboard/overview/');
+        }
+      } else if (['calendar', 'patients', 'payments', 'reports'].includes(activeTab)) {
+        if (!window.location.pathname.includes(`/clinician/dashboard/${activeTab}/`)) {
+          window.history.pushState(null, '', `/clinician/dashboard/${activeTab}/`);
         }
       }
     }
@@ -911,10 +1174,31 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     setTableSearch('');
   };
 
-  const filteredReferrals = referrals.filter((item) => {
+  // Map saved drafts into table items with clear formatting so they appear directly in the table
+  const mappedDrafts: ReferralItem[] = savedDrafts.map((d) => ({
+    id: d.id.startsWith('draft-') ? `DFT-${d.id.replace('draft-', '').padStart(3, '0')}` : d.id.toUpperCase(),
+    patientName: d.formData.fullName || 'Untitled Patient',
+    service: d.formData.scanType || (d.formData.bodyPart ? `${d.formData.bodyPart} Scan` : 'Diagnostic Scan'),
+    provider: 'Not selected',
+    date: d.savedAtDisplay || (d.savedAt ? new Date(d.savedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Saved recently'),
+    status: 'Draft' as ReferralStatus,
+    specialty: d.formData.scanType,
+    hospital: 'Not selected',
+    bodyPart: d.formData.bodyPart,
+    clinicalNote: d.formData.clinicalNote,
+    isDraft: true,
+    draft: d,
+  }));
+
+  const allCombinedReferrals: ReferralItem[] = [
+    ...mappedDrafts,
+    ...referrals.map((r) => ({ ...r, isDraft: false })),
+  ];
+
+  const filteredReferrals = allCombinedReferrals.filter((item) => {
     if (tableSearch.trim()) {
       const q = tableSearch.toLowerCase().trim();
-      const matchId = item.id.toLowerCase().includes(q);
+      const matchId = item.id.toLowerCase().includes(q) || (item.isDraft && item.draft?.id.toLowerCase().includes(q));
       const matchName = item.patientName.toLowerCase().includes(q);
       const matchService = (item.service || item.specialty || '').toLowerCase().includes(q);
       const matchProvider = (item.provider || item.hospital || '').toLowerCase().includes(q);
@@ -948,6 +1232,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
   const getStatusClass = (status: ReferralStatus | string): string => {
     switch (status) {
+      case 'Draft':
+        return 'status-draft';
       case 'Confirmed':
         return 'status-confirmed';
       case 'Submitted':
@@ -965,10 +1251,271 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     }
   };
 
-  const totalKpi = referrals.length;
+  const totalKpi = referrals.length + savedDrafts.length;
   const submittedKpi = referrals.filter((r) => r.status === 'Submitted').length;
   const bookingKpi = referrals.filter((r) => r.status === 'Booking in Progress').length;
   const confirmedKpi = referrals.filter((r) => r.status === 'Confirmed' || r.status === 'Completed' || (r.status as string) === 'Paid').length;
+
+  const handleNewReferralForPatient = (p: {
+    name: string;
+    email?: string;
+    phone?: string;
+    gender?: string;
+    dob?: string;
+    address?: string;
+  }) => {
+    setFormData({
+      fullName: p.name,
+      gender: p.gender || 'Male',
+      dob: p.dob || '',
+      email: p.email || '',
+      phone: p.phone || '',
+      address: p.address || '',
+      scanType: '',
+      bodyPart: '',
+      contrastOption: '',
+      clinicalNote: '',
+    });
+    setNewUserForm({
+      fullName: p.name,
+      gender: p.gender || 'Male',
+      dob: p.dob || '',
+      email: p.email || '',
+      phone: p.phone || '',
+      address: p.address || '',
+    });
+    setPatientWorkflowType('existing');
+    setExistingPatientFound(true);
+    setAutoPopulatedFields({
+      fullName: true,
+      email: Boolean(p.email),
+      phone: Boolean(p.phone),
+      gender: Boolean(p.gender),
+      dob: Boolean(p.dob),
+      address: Boolean(p.address),
+    });
+    setModalStep('scan-details');
+    if (onAddToast) {
+      onAddToast(
+        'success',
+        'Patient Selected',
+        `Starting new referral for ${p.name}. Patient details have been pre-filled.`
+      );
+    }
+  };
+
+  // Calendar Calculations
+  const calendarCurrentYear = calendarCurrentDate.getFullYear();
+  const calendarCurrentMonth = calendarCurrentDate.getMonth();
+  const calendarMonthLabel = calendarCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const calendarGridDays = useMemo(() => {
+    const firstDayIndex = new Date(calendarCurrentYear, calendarCurrentMonth, 1).getDay();
+    const daysInCurrentMonth = new Date(calendarCurrentYear, calendarCurrentMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(calendarCurrentYear, calendarCurrentMonth, 0).getDate();
+
+    const prevMonthDays = [];
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      prevMonthDays.push({
+        dayNumber: daysInPrevMonth - i,
+        date: new Date(calendarCurrentYear, calendarCurrentMonth - 1, daysInPrevMonth - i),
+        isCurrentMonth: false,
+      });
+    }
+
+    const currentMonthDays = [];
+    for (let d = 1; d <= daysInCurrentMonth; d++) {
+      currentMonthDays.push({
+        dayNumber: d,
+        date: new Date(calendarCurrentYear, calendarCurrentMonth, d),
+        isCurrentMonth: true,
+      });
+    }
+
+    const totalCellsSoFar = prevMonthDays.length + currentMonthDays.length;
+    const totalGridCells = totalCellsSoFar > 35 ? 42 : 35;
+    const nextMonthDaysCount = totalGridCells - totalCellsSoFar;
+    const nextMonthDays = [];
+    for (let d = 1; d <= nextMonthDaysCount; d++) {
+      nextMonthDays.push({
+        dayNumber: d,
+        date: new Date(calendarCurrentYear, calendarCurrentMonth + 1, d),
+        isCurrentMonth: false,
+      });
+    }
+
+    return [...prevMonthDays, ...currentMonthDays, ...nextMonthDays];
+  }, [calendarCurrentYear, calendarCurrentMonth]);
+
+  const getReferralsForDate = (date: Date) => {
+    return referrals.filter((r) => {
+      const rDate = parseReferralDate(r);
+      return isSameCalendarDay(rDate, date);
+    });
+  };
+
+  const selectedDateReferrals = useMemo(() => {
+    return referrals.filter((r) => {
+      const rDate = parseReferralDate(r);
+      const matchesDay = isSameCalendarDay(rDate, selectedCalendarDate);
+      if (!matchesDay) return false;
+      if (calendarStatusFilter !== 'all' && r.status !== calendarStatusFilter) return false;
+      if (calendarSearchQuery.trim()) {
+        const q = calendarSearchQuery.toLowerCase().trim();
+        const matchName = r.patientName.toLowerCase().includes(q);
+        const matchService = r.service.toLowerCase().includes(q);
+        const matchProvider = r.provider.toLowerCase().includes(q);
+        return matchName || matchService || matchProvider;
+      }
+      return true;
+    });
+  }, [referrals, selectedCalendarDate, calendarStatusFilter, calendarSearchQuery]);
+
+  // Calendar Sidebar Detail Panel Pagination (2 bookings per page for ergonomic height)
+  const [calendarSidePage, setCalendarSidePage] = useState(1);
+  const calendarSidePageSize = 2;
+
+  // Reset side page whenever selected date, status filter, or search query changes
+  useEffect(() => {
+    setCalendarSidePage(1);
+  }, [selectedCalendarDate, calendarStatusFilter, calendarSearchQuery]);
+
+  const totalSideItems = selectedDateReferrals.length;
+  const totalSidePages = Math.max(1, Math.ceil(totalSideItems / calendarSidePageSize));
+  const pagedSideReferrals = useMemo(() => {
+    const start = (calendarSidePage - 1) * calendarSidePageSize;
+    return selectedDateReferrals.slice(start, start + calendarSidePageSize);
+  }, [selectedDateReferrals, calendarSidePage, calendarSidePageSize]);
+
+  const filteredCalendarAgendaReferrals = useMemo(() => {
+    return referrals.filter((r) => {
+      if (calendarStatusFilter !== 'all' && r.status !== calendarStatusFilter) return false;
+      if (calendarSearchQuery.trim()) {
+        const q = calendarSearchQuery.toLowerCase().trim();
+        const matchName = r.patientName.toLowerCase().includes(q);
+        const matchService = r.service.toLowerCase().includes(q);
+        const matchProvider = r.provider.toLowerCase().includes(q);
+        return matchName || matchService || matchProvider;
+      }
+      return true;
+    });
+  }, [referrals, calendarStatusFilter, calendarSearchQuery]);
+
+  // Patients Page Calculations
+  const referredPatientsList = useMemo(() => {
+    const patientMap = new Map<
+      string,
+      {
+        patientName: string;
+        email: string;
+        phone: string;
+        gender: string;
+        dob: string;
+        address: string;
+        referrals: ReferralItem[];
+        latestReferral: ReferralItem;
+      }
+    >();
+
+    referrals.forEach((ref) => {
+      if (ref.isDraft) return;
+      const key = ref.patientName.toLowerCase().trim();
+      const existing = existingPatients.find((p) => p.name.toLowerCase().trim() === key);
+
+      if (!patientMap.has(key)) {
+        patientMap.set(key, {
+          patientName: ref.patientName,
+          email: existing?.email || `${ref.patientName.toLowerCase().replace(/\s+/g, '.')}@patientmail.com`,
+          phone: existing?.phone || '+234 800 123 4567',
+          gender: existing?.gender || 'Not specified',
+          dob: existing?.dob || 'Not specified',
+          address: existing?.address || 'Lagos, Nigeria',
+          referrals: [ref],
+          latestReferral: ref,
+        });
+      } else {
+        const entry = patientMap.get(key)!;
+        entry.referrals.push(ref);
+      }
+    });
+
+    existingPatients.forEach((ep) => {
+      const key = ep.name.toLowerCase().trim();
+      if (!patientMap.has(key)) {
+        const placeholderRef: ReferralItem = {
+          id: `REC-${ep.id}`,
+          patientName: ep.name,
+          service: 'General Consultation Record',
+          provider: 'ResQ Clinician Network',
+          date: ep.createdDate || 'Recent',
+          status: 'Confirmed',
+        };
+        patientMap.set(key, {
+          patientName: ep.name,
+          email: ep.email,
+          phone: ep.phone,
+          gender: ep.gender,
+          dob: ep.dob,
+          address: ep.address,
+          referrals: [placeholderRef],
+          latestReferral: placeholderRef,
+        });
+      }
+    });
+
+    return Array.from(patientMap.values());
+  }, [referrals, existingPatients]);
+
+  const filteredPatientDrafts = useMemo(() => {
+    if (!patientSearchQuery.trim()) return savedDrafts;
+    const q = patientSearchQuery.toLowerCase().trim();
+    return savedDrafts.filter(
+      (d) =>
+        (d.formData.fullName || '').toLowerCase().includes(q) ||
+        (d.formData.email || '').toLowerCase().includes(q) ||
+        (d.formData.phone || '').toLowerCase().includes(q) ||
+        (d.formData.scanType || '').toLowerCase().includes(q) ||
+        (d.formData.bodyPart || '').toLowerCase().includes(q)
+    );
+  }, [savedDrafts, patientSearchQuery]);
+
+  const filteredReferredPatients = useMemo(() => {
+    if (!patientSearchQuery.trim()) return referredPatientsList;
+    const q = patientSearchQuery.toLowerCase().trim();
+    return referredPatientsList.filter(
+      (p) =>
+        p.patientName.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        p.phone.toLowerCase().includes(q) ||
+        p.latestReferral?.service.toLowerCase().includes(q) ||
+        p.latestReferral?.provider.toLowerCase().includes(q)
+    );
+  }, [referredPatientsList, patientSearchQuery]);
+
+  const pagedCalendarAgendaReferrals = useMemo(() => {
+    const start = (calendarAgendaCurrentPage - 1) * calendarAgendaPageSize;
+    return filteredCalendarAgendaReferrals.slice(start, start + calendarAgendaPageSize);
+  }, [filteredCalendarAgendaReferrals, calendarAgendaCurrentPage, calendarAgendaPageSize]);
+
+  // Unified items list for Patients Directory so both drafts & referred patients paginate cleanly
+  const allVisiblePatientItems = useMemo(() => {
+    const items: Array<
+      | { kind: 'draft'; id: string; draft: (typeof savedDrafts)[0] }
+      | { kind: 'patient'; id: string; patient: (typeof referredPatientsList)[0] }
+    > = [];
+    if (patientTabFilter === 'all' || patientTabFilter === 'drafts') {
+      filteredPatientDrafts.forEach((draft) => items.push({ kind: 'draft', id: draft.id, draft }));
+    }
+    if (patientTabFilter === 'all' || patientTabFilter === 'referred') {
+      filteredReferredPatients.forEach((patient) => items.push({ kind: 'patient', id: patient.patientName, patient }));
+    }
+    return items;
+  }, [patientTabFilter, filteredPatientDrafts, filteredReferredPatients]);
+
+  const pagedPatientItems = useMemo(() => {
+    const start = (patientCurrentPage - 1) * patientPageSize;
+    return allVisiblePatientItems.slice(start, start + patientPageSize);
+  }, [allVisiblePatientItems, patientCurrentPage, patientPageSize]);
 
   const closeModal = () => {
     setModalStep('none');
@@ -1074,6 +1621,14 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     setPatientWorkflowType('existing');
     setSelectedPatientId(patient.id);
     setExistingPatientFound(true);
+    setAutoPopulatedFields({
+      fullName: Boolean(patient.name?.trim()),
+      gender: Boolean(patient.gender?.trim() && patient.gender !== 'Select Gender'),
+      dob: Boolean(patient.dob?.trim()),
+      email: Boolean(patient.email?.trim()),
+      phone: Boolean(patient.phone?.trim()),
+      address: Boolean(patient.address?.trim()),
+    });
     setScanErrors({});
     setFormData({
       fullName: patient.name,
@@ -1182,6 +1737,17 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
     setSelectedPatientId(draft.selectedPatientId || null);
     if (draft.existingUserLookupEmail) {
       setExistingUserLookupEmail(draft.existingUserLookupEmail);
+    }
+    if (draft.workflowType === 'existing' || draft.existingUserLookupEmail) {
+      setExistingPatientFound(true);
+      setAutoPopulatedFields({
+        fullName: Boolean(draft.formData.fullName?.trim()),
+        gender: Boolean(draft.formData.gender?.trim() && draft.formData.gender !== 'Select Gender'),
+        dob: Boolean(draft.formData.dob?.trim()),
+        email: Boolean(draft.formData.email?.trim()),
+        phone: Boolean(draft.formData.phone?.trim()),
+        address: Boolean(draft.formData.address?.trim()),
+      });
     }
     setModalStep(draft.step);
 
@@ -1326,7 +1892,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
         setSavedDrafts(updatedDrafts);
         try {
           localStorage.setItem('resq_referral_drafts', JSON.stringify(updatedDrafts));
-        } catch (e) {}
+        } catch {}
         setActiveDraftId(null);
       }
 
@@ -1433,7 +1999,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
       setSavedDrafts(updatedDrafts);
       try {
         localStorage.setItem('resq_referral_drafts', JSON.stringify(updatedDrafts));
-      } catch (e) {}
+      } catch {}
       setActiveDraftId(null);
     }
 
@@ -1623,7 +2189,10 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             <button
               type="button"
               className="logout-icon-btn"
-              onClick={onSignOut}
+              onClick={() => {
+                setIsSignOutModalOpen(true);
+                setIsMobileSidebarOpen(false);
+              }}
               title="Sign Out"
               aria-label="Sign Out"
             >
@@ -1648,19 +2217,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
               <Menu size={22} />
             </button>
             <h1 className="header-page-title">
-              {activeTab === 'referrals' ? 'Referral Lists' : 'Overview'}
+              {navItems.find((item) => item.id === activeTab)?.label || (activeTab ? activeTab.charAt(0).toUpperCase() + activeTab.slice(1) : 'Referrals')}
             </h1>
-          </div>
-
-          <div className="header-search-bar">
-            <Search size={18} className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search here..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
           </div>
 
           <div className="header-actions">
@@ -1709,7 +2267,7 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     className="btn-create-referral flex-center-gap"
                     onClick={() => handleTabChange('referrals')}
                   >
-                    <span>View Referral Lists</span>
+                    <span>View Referrals</span>
                     <ArrowRight size={16} />
                   </button>
                   <button
@@ -1963,28 +2521,22 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
               <div className="referrals-content-area">
                 {/* Clean, High-Professionalism Referral Header */}
                 <div className="toolbar-row referrals-main-toolbar">
-                  <div className="toolbar-left">
-                    <div className="referrals-title-badge-group">
-                      <h2 className="referrals-view-title">Referrals</h2>
-                      <span className="total-patients-count">
-                        <span className="live-status-dot" />
-                        {referrals.length} Total
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="toolbar-right">
+                  <div className="toolbar-left-group">
                     <button
                       type="button"
                       className="toolbar-action-btn toolbar-icon-square"
-                      title="Refresh referrals"
+                      title="Reload referrals"
+                      aria-label="Reload referrals"
                       onClick={() => {
                         loadDoctorReferrals();
                         setTableSearch('');
                       }}
                     >
-                      <RotateCw size={14} className={isLoadingReferrals ? 'spin-anim' : ''} />
+                      <RotateCw size={15} className={isLoadingReferrals ? 'spin-anim' : ''} />
                     </button>
+                  </div>
+
+                  <div className="toolbar-right">
                     <button
                       type="button"
                       className="toolbar-action-btn desktop-only-action"
@@ -2008,61 +2560,72 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 </div>
 
                 <div className="referrals-body-padding">
-                  {/* Ultra-Compact High-Professionalism Status Metrics Strip */}
-                  <div className="referrals-metrics-strip" role="region" aria-label="Referral status summary">
+                  {/* Real Typical Status Metric Cards Grid */}
+                  <div className="referrals-metrics-cards" role="region" aria-label="Referral status summary">
                     <button
                       type="button"
-                      className={`metric-segment ${activeStatusFilters.length === 0 ? 'active' : ''}`}
+                      className={`metric-stat-card ${activeStatusFilters.length === 0 ? 'active' : ''}`}
                       onClick={handleClearFilters}
-                      title="View all referrals"
+                      title="Filter by All Referrals"
                     >
-                      <span className="metric-seg-label">All</span>
-                      <span className="metric-seg-val">{totalKpi}</span>
+                      <div className="metric-card-top">
+                        <span className="metric-card-label">All</span>
+                        <span className="metric-card-indicator indicator-all" />
+                      </div>
+                      <div className="metric-card-bottom">
+                        <span className="metric-card-val">{totalKpi}</span>
+                      </div>
                     </button>
 
-                    <div className="metric-strip-divider" />
-
                     <button
                       type="button"
-                      className={`metric-segment ${activeStatusFilters.includes('Submitted') ? 'active' : ''}`}
+                      className={`metric-stat-card ${activeStatusFilters.includes('Submitted') ? 'active' : ''}`}
                       onClick={() => toggleStatusFilter('Submitted')}
                       title="Filter by Submitted"
                     >
-                      <div className="metric-seg-label-group">
-                        <span className="metric-seg-dot dot-submitted" />
-                        <span className="metric-seg-label">Submitted</span>
+                      <div className="metric-card-top">
+                        <div className="metric-card-label-group">
+                          <span className="metric-card-dot dot-submitted" />
+                          <span className="metric-card-label">Submitted</span>
+                        </div>
                       </div>
-                      <span className="metric-seg-val">{submittedKpi}</span>
+                      <div className="metric-card-bottom">
+                        <span className="metric-card-val">{submittedKpi}</span>
+                      </div>
                     </button>
-
-                    <div className="metric-strip-divider" />
 
                     <button
                       type="button"
-                      className={`metric-segment ${activeStatusFilters.includes('Booking in Progress') ? 'active' : ''}`}
+                      className={`metric-stat-card ${activeStatusFilters.includes('Booking in Progress') ? 'active' : ''}`}
                       onClick={() => toggleStatusFilter('Booking in Progress')}
                       title="Filter by In Progress"
                     >
-                      <div className="metric-seg-label-group">
-                        <span className="metric-seg-dot dot-progress" />
-                        <span className="metric-seg-label">In Progress</span>
+                      <div className="metric-card-top">
+                        <div className="metric-card-label-group">
+                          <span className="metric-card-dot dot-progress" />
+                          <span className="metric-card-label">In Progress</span>
+                        </div>
                       </div>
-                      <span className="metric-seg-val">{bookingKpi}</span>
+                      <div className="metric-card-bottom">
+                        <span className="metric-card-val">{bookingKpi}</span>
+                      </div>
                     </button>
-
-                    <div className="metric-strip-divider" />
 
                     <button
                       type="button"
-                      className={`metric-segment ${activeStatusFilters.includes('Confirmed') ? 'active' : ''}`}
+                      className={`metric-stat-card ${activeStatusFilters.includes('Confirmed') ? 'active' : ''}`}
                       onClick={() => toggleStatusFilter('Confirmed')}
                       title="Filter by Confirmed"
                     >
-                      <div className="metric-seg-label-group">
-                        <span className="metric-seg-dot dot-confirmed" />
-                        <span className="metric-seg-label">Confirmed</span>
+                      <div className="metric-card-top">
+                        <div className="metric-card-label-group">
+                          <span className="metric-card-dot dot-confirmed" />
+                          <span className="metric-card-label">Confirmed</span>
+                        </div>
                       </div>
-                      <span className="metric-seg-val">{confirmedKpi}</span>
+                      <div className="metric-card-bottom">
+                        <span className="metric-card-val">{confirmedKpi}</span>
+                      </div>
                     </button>
                   </div>
 
@@ -2165,12 +2728,13 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                           <th>PROVIDER</th>
                           <th>STATUS</th>
                           <th>CREATED DATE</th>
+                          <th className="th-actions">ACTIONS</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {isLoadingReferrals && referrals.length === 0 ? (
+                        {isLoadingReferrals && allCombinedReferrals.length === 0 ? (
                           <tr>
-                            <td colSpan={6} style={{ textAlign: 'center', padding: '64px 20px', color: '#64748B' }}>
+                            <td colSpan={7} style={{ textAlign: 'center', padding: '64px 20px', color: '#64748B' }}>
                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                                 <RotateCw size={26} className="spin-anim" color="#0D9488" />
                                 <span style={{ fontSize: '14px', fontWeight: 600, color: '#475569' }}>
@@ -2179,9 +2743,9 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                               </div>
                             </td>
                           </tr>
-                        ) : referrals.length === 0 ? (
+                        ) : allCombinedReferrals.length === 0 ? (
                           <tr>
-                            <td colSpan={6} style={{ textAlign: 'center', padding: '64px 20px', color: '#64748B' }}>
+                            <td colSpan={7} style={{ textAlign: 'center', padding: '64px 20px', color: '#64748B' }}>
                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                                 <ClipboardList size={36} color="#94A3B8" />
                                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>
@@ -2203,28 +2767,127 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                           </tr>
                         ) : filteredReferrals.length === 0 ? (
                           <tr>
-                            <td colSpan={6} style={{ textAlign: 'center', padding: '48px 20px', color: '#64748B' }}>
+                            <td colSpan={7} style={{ textAlign: 'center', padding: '48px 20px', color: '#64748B' }}>
                               No referrals found matching your search or filter.
                             </td>
                           </tr>
                         ) : (
                           filteredReferrals.map((ref) => {
                             const statusClass = getStatusClass(ref.status);
+                            const isDraft = ref.isDraft && ref.draft;
+
                             return (
-                              <tr key={ref.id}>
-                                <td className="referral-id-cell">{ref.id}</td>
-                                <td className="patient-name-cell">{ref.patientName}</td>
-                                <td className="service-cell">{ref.service || ref.specialty}</td>
-                                <td className={ref.provider === 'Not selected' || ref.hospital === 'Not selected' ? 'provider-muted' : 'provider-cell'}>
-                                  {ref.provider || ref.hospital || 'Not selected'}
+                              <tr
+                                key={isDraft ? `draft-${ref.draft!.id}` : ref.id}
+                                className={isDraft ? 'row-is-draft' : 'row-normal-referral'}
+                              >
+                                <td className="referral-id-cell">
+                                  {isDraft ? (
+                                    <div className="draft-id-container">
+                                      <span className="draft-badge-pill">
+                                        <FileEdit size={11} />
+                                        <span>DRAFT</span>
+                                      </span>
+                                      <span className="draft-id-tag">{ref.id}</span>
+                                    </div>
+                                  ) : (
+                                    ref.id
+                                  )}
                                 </td>
+
+                                <td className="patient-name-cell">
+                                  {isDraft ? (
+                                    <div className="draft-patient-cell">
+                                      <span className="draft-patient-name">{ref.patientName}</span>
+                                      <span className="draft-step-hint">
+                                        {ref.draft!.step === 'scan-details' ? 'Step 2: Scan details pending' : 'Step 1: Patient info pending'}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    ref.patientName
+                                  )}
+                                </td>
+
+                                <td className="service-cell">
+                                  {ref.service || ref.specialty || 'Diagnostic Scan'}
+                                </td>
+
+                                <td className={isDraft || ref.provider === 'Not selected' || ref.hospital === 'Not selected' ? 'provider-muted' : 'provider-cell'}>
+                                  {isDraft ? (
+                                    <span className="draft-provider-badge">Pending center selection</span>
+                                  ) : (
+                                    ref.provider || ref.hospital || 'Not selected'
+                                  )}
+                                </td>
+
                                 <td>
                                   <span className={`status-pill ${statusClass}`}>
                                     <span className="status-dot" />
                                     {ref.status}
                                   </span>
                                 </td>
-                                <td className="date-cell">{ref.date}</td>
+
+                                <td className="date-cell">
+                                  {isDraft ? (
+                                    <span className="draft-date-text">{ref.date}</span>
+                                  ) : (
+                                    ref.date
+                                  )}
+                                </td>
+
+                                <td className="actions-cell">
+                                  {isDraft ? (
+                                    <div className="table-actions-group">
+                                      <button
+                                        type="button"
+                                        className="btn-table-resume-draft"
+                                        onClick={() => handleResumeDraft(ref.draft!)}
+                                        title="Resume & complete referral"
+                                      >
+                                        <ArrowUpRight size={13} />
+                                        <span>Resume</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="btn-table-delete-draft"
+                                        onClick={(e) => handleDeleteDraft(ref.draft!.id, e)}
+                                        title="Discard this draft"
+                                        aria-label="Discard draft"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="table-actions-group">
+                                      <button
+                                        type="button"
+                                        className="btn-table-view-referral"
+                                        onClick={() => {
+                                          setSubmittedReferralInfo({
+                                            id: ref.id,
+                                            patientName: ref.patientName,
+                                            scanType: ref.service || ref.specialty || 'Diagnostic Scan',
+                                            bodyPart: ref.bodyPart || 'General',
+                                            contrastOption: 'Without Contrast',
+                                            facilityName: ref.provider || ref.hospital || 'ResQ Imaging Network',
+                                            status: ref.status,
+                                            referralLink: '',
+                                            patientPhone: 'Confidential',
+                                            patientEmail: 'patient@resq.health',
+                                            patientGender: 'Verified',
+                                            patientDob: 'Verified',
+                                            clinicalNote: ref.clinicalNote || 'Standard clinical imaging referral documentation.',
+                                          });
+                                          setIsRequisitionModalOpen(true);
+                                        }}
+                                        title="View referral details"
+                                      >
+                                        <FileText size={12} />
+                                        <span>View</span>
+                                      </button>
+                                    </div>
+                                  )}
+                                </td>
                               </tr>
                             );
                           })
@@ -2235,7 +2898,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     {/* Table Footer & Pagination */}
                     <div className="referrals-table-footer">
                       <div className="footer-showing-text">
-                        Showing {filteredReferrals.length > 0 ? 1 : 0} to {filteredReferrals.length} of {referrals.length} referrals
+                        Showing {filteredReferrals.length > 0 ? 1 : 0} to {filteredReferrals.length} of {allCombinedReferrals.length} items
+                        {savedDrafts.length > 0 && ` (${savedDrafts.length} draft${savedDrafts.length === 1 ? '' : 's'})`}
                       </div>
 
                       <div className="pagination-controls">
@@ -2315,12 +2979,24 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     ) : (
                       paginatedMobileReferrals.map((ref) => {
                         const statusClass = getStatusClass(ref.status);
+                        const isDraft = ref.isDraft && ref.draft;
+
                         return (
-                          <div key={ref.id} className="mobile-referral-card">
+                          <div
+                            key={isDraft ? `m-draft-${ref.draft!.id}` : `m-${ref.id}`}
+                            className={`mobile-referral-card ${isDraft ? 'mobile-draft-card' : ''}`}
+                          >
                             <div className="mobile-ref-card-header">
                               <div className="mobile-ref-card-title-group">
                                 <span className="mobile-ref-patient-name">{ref.patientName}</span>
-                                <span className="mobile-ref-id-badge">{ref.id}</span>
+                                {isDraft ? (
+                                  <span className="draft-badge-pill">
+                                    <FileEdit size={10} />
+                                    <span>DRAFT</span>
+                                  </span>
+                                ) : (
+                                  <span className="mobile-ref-id-badge">{ref.id}</span>
+                                )}
                               </div>
                               <span className={`status-pill ${statusClass}`}>
                                 <span className="status-dot" />
@@ -2342,8 +3018,8 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                                 <span className="mobile-ref-detail-label">Facility / Provider</span>
                                 <div className="mobile-ref-facility-row">
                                   <Building2 size={13} className="text-secondary" />
-                                  <span className={`mobile-ref-detail-val ${ref.provider === 'Not selected' || ref.hospital === 'Not selected' ? 'provider-muted' : ''}`}>
-                                    {ref.provider || ref.hospital || 'Not selected'}
+                                  <span className={`mobile-ref-detail-val ${isDraft || ref.provider === 'Not selected' || ref.hospital === 'Not selected' ? 'provider-muted' : ''}`}>
+                                    {isDraft ? 'Pending center selection' : (ref.provider || ref.hospital || 'Not selected')}
                                   </span>
                                 </div>
                               </div>
@@ -2355,13 +3031,36 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                                 <span>{ref.date}</span>
                               </div>
                               <span className="mobile-ref-status-hint">
-                                {ref.status === 'Confirmed'
+                                {isDraft
+                                  ? 'Draft (Pending submission)'
+                                  : ref.status === 'Confirmed'
                                   ? 'Appointment Confirmed'
                                   : ref.status === 'Booking in Progress'
                                   ? 'Center Reviewing'
                                   : 'Payment Link Sent'}
                               </span>
                             </div>
+
+                            {isDraft && (
+                              <div className="mobile-draft-actions">
+                                <button
+                                  type="button"
+                                  className="btn-mobile-resume-draft"
+                                  onClick={() => handleResumeDraft(ref.draft!)}
+                                >
+                                  <ArrowUpRight size={14} />
+                                  <span>Resume Draft</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn-mobile-delete-draft"
+                                  onClick={(e) => handleDeleteDraft(ref.draft!.id, e)}
+                                  aria-label="Discard draft"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         );
                       })
@@ -2451,8 +3150,1101 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
           </div>
         )}
 
+        {/* 3. CALENDAR TAB VIEW */}
+        {activeTab === 'calendar' && (
+          <div className="calendar-view-wrapper">
+            <div className="calendar-page-layout">
+              {/* Calendar Header Row */}
+              <div className="calendar-top-header">
+                <div className="calendar-header-title-group">
+                  <div className="calendar-header-badge">
+                    <Calendar size={13} />
+                    <span>Clinical Schedule</span>
+                  </div>
+                  <h1 className="calendar-main-title">Diagnostic & Referral Calendar</h1>
+                  <p className="calendar-main-subtitle">
+                    Schedule and monitoring for patient imaging appointments, consultations, and diagnostic follow-ups.
+                  </p>
+                </div>
+                <div className="calendar-header-actions">
+                  <button
+                    type="button"
+                    className="btn-create-referral"
+                    onClick={() => setModalStep('choose-type')}
+                  >
+                    <Plus size={16} />
+                    <span>New Referral</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Minimalist Medical Metrics Ribbon - Clean, Low Color, High Legibility */}
+              <div className="calendar-kpi-ribbon">
+                <div
+                  className={`calendar-kpi-chip ${calendarStatusFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setCalendarStatusFilter('all')}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <span className="calendar-kpi-val">{referrals.length}</span>
+                  <span className="calendar-kpi-lbl">Total Scheduled</span>
+                </div>
+                <div className="calendar-kpi-divider" />
+                <div
+                  className={`calendar-kpi-chip ${calendarStatusFilter === 'Confirmed' ? 'active' : ''}`}
+                  onClick={() => setCalendarStatusFilter('Confirmed')}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <span className="calendar-kpi-val">{confirmedKpi}</span>
+                  <span className="calendar-kpi-lbl">Confirmed</span>
+                </div>
+                <div className="calendar-kpi-divider" />
+                <div
+                  className={`calendar-kpi-chip ${calendarStatusFilter === 'Booking in Progress' ? 'active' : ''}`}
+                  onClick={() => setCalendarStatusFilter('Booking in Progress')}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <span className="calendar-kpi-val">{bookingKpi + submittedKpi}</span>
+                  <span className="calendar-kpi-lbl">In Progress</span>
+                </div>
+                <div className="calendar-kpi-divider" />
+                <div
+                  className="calendar-kpi-chip"
+                  onClick={() => {
+                    setActiveTab('patients');
+                    setPatientTabFilter('drafts');
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  title="View pending drafts in Patients Directory"
+                >
+                  <span className="calendar-kpi-val">{savedDrafts.length}</span>
+                  <span className="calendar-kpi-lbl">Pending Drafts</span>
+                </div>
+              </div>
+
+              {/* Navigation & Controls Toolbar */}
+              <div className="calendar-nav-toolbar">
+                <div className="calendar-nav-controls">
+                  <div className="calendar-nav-cluster">
+                    <button
+                      type="button"
+                      className="calendar-nav-arrow-btn"
+                      onClick={handlePrevMonth}
+                      title="Previous Month"
+                      aria-label="Previous Month"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="calendar-current-month-display">
+                      {calendarMonthLabel}
+                    </span>
+                    <button
+                      type="button"
+                      className="calendar-nav-arrow-btn"
+                      onClick={handleNextMonth}
+                      title="Next Month"
+                      aria-label="Next Month"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      className="calendar-today-btn"
+                      onClick={handleToday}
+                    >
+                      Today
+                    </button>
+                  </div>
+
+                  <div className="calendar-view-toggle">
+                    <button
+                      type="button"
+                      className={`view-toggle-pill ${calendarViewMode === 'month' ? 'active' : ''}`}
+                      onClick={() => setCalendarViewMode('month')}
+                    >
+                      <Grid size={14} />
+                      <span>Month</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`view-toggle-pill ${calendarViewMode === 'agenda' ? 'active' : ''}`}
+                      onClick={() => setCalendarViewMode('agenda')}
+                    >
+                      <List size={14} />
+                      <span>Agenda</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="calendar-controls-right">
+                  <div className="calendar-filter-pills">
+                    <button
+                      type="button"
+                      className={`filter-pill-btn ${calendarStatusFilter === 'all' ? 'active' : ''}`}
+                      onClick={() => setCalendarStatusFilter('all')}
+                    >
+                      All
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-pill-btn ${calendarStatusFilter === 'Confirmed' ? 'active' : ''}`}
+                      onClick={() => setCalendarStatusFilter('Confirmed')}
+                    >
+                      Confirmed
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-pill-btn ${calendarStatusFilter === 'Booking in Progress' ? 'active' : ''}`}
+                      onClick={() => setCalendarStatusFilter('Booking in Progress')}
+                    >
+                      In Progress
+                    </button>
+                  </div>
+
+                  <div className="calendar-search-box">
+                    <Search size={15} color="#64748B" />
+                    <input
+                      type="text"
+                      value={calendarSearchQuery}
+                      onChange={(e) => setCalendarSearchQuery(e.target.value)}
+                      placeholder="Search patient, scan or center..."
+                      className="calendar-search-input"
+                    />
+                    {calendarSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setCalendarSearchQuery('')}
+                        className="calendar-search-clear"
+                        title="Clear search"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Calendar View Body */}
+              {calendarViewMode === 'month' ? (
+                <div className="calendar-interactive-layout">
+                  {/* Left Column: Month Calendar Grid */}
+                  <div className="calendar-grid-card">
+                    <div className="calendar-grid-weekdays">
+                      <span>Sun</span>
+                      <span>Mon</span>
+                      <span>Tue</span>
+                      <span>Wed</span>
+                      <span>Thu</span>
+                      <span>Fri</span>
+                      <span>Sat</span>
+                    </div>
+
+                    <div className="calendar-grid-days">
+                      {calendarGridDays.map((item, idx) => {
+                        const dayReferrals = getReferralsForDate(item.date);
+                        const isToday = isSameCalendarDay(item.date, new Date());
+                        const isSelected = isSameCalendarDay(item.date, selectedCalendarDate);
+
+                        return (
+                          <div
+                            key={idx}
+                            className={`calendar-day-cell ${item.isCurrentMonth ? 'in-month' : 'out-month'} ${
+                              isToday ? 'is-today' : ''
+                            } ${isSelected ? 'is-selected' : ''} ${
+                              dayReferrals.length > 0 ? 'has-events' : ''
+                            }`}
+                            onClick={() => {
+                              setSelectedCalendarDate(item.date);
+                              if (!item.isCurrentMonth) {
+                                setCalendarCurrentDate(new Date(item.date.getFullYear(), item.date.getMonth(), 1));
+                              }
+                            }}
+                          >
+                            <div className="day-cell-top">
+                              <span className={`day-number-badge ${isToday ? 'today-badge' : ''}`}>
+                                {item.dayNumber}
+                              </span>
+                              {dayReferrals.length > 0 && (
+                                <span className="day-scan-count">
+                                  {dayReferrals.length}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="day-events-list">
+                              {dayReferrals.slice(0, 2).map((ref) => (
+                                <div
+                                  key={ref.id}
+                                  className={`day-event-chip chip-${getStatusClass(ref.status)}`}
+                                  title={`${ref.patientName} - ${ref.service} (${ref.provider})`}
+                                >
+                                  <span className="chip-time">{ref.service.split('-')[0].trim()}</span>
+                                  <span className="chip-name">{ref.patientName.split(' ')[0]}</span>
+                                </div>
+                              ))}
+                              {dayReferrals.length > 2 && (
+                                <div className="day-more-chip">
+                                  +{dayReferrals.length - 2} more
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Selected Day Schedule Panel */}
+                  <div className="calendar-day-detail-panel">
+                    <div className="detail-panel-header">
+                      <div>
+                        <span className="detail-panel-date-tag">
+                          {selectedCalendarDate.toLocaleDateString('en-US', { weekday: 'long' })}
+                        </span>
+                        <h3 className="detail-panel-date-heading">
+                          {selectedCalendarDate.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </h3>
+                      </div>
+                      <span className="detail-panel-count-pill">
+                        {selectedDateReferrals.length} {selectedDateReferrals.length === 1 ? 'Booking' : 'Bookings'}
+                      </span>
+                    </div>
+
+                    <div className="detail-panel-body">
+                      {selectedDateReferrals.length > 0 ? (
+                        <>
+                          <div className="selected-day-appointments-list">
+                            {pagedSideReferrals.map((ref) => (
+                              <div key={ref.id} className="appointment-card-item">
+                                <div className="appointment-card-header">
+                                  <div className="appointment-time-badge">
+                                    <Clock size={13} />
+                                    <span>10:00 AM</span>
+                                  </div>
+                                  <span className={`status-pill ${getStatusClass(ref.status)}`}>
+                                    {ref.status}
+                                  </span>
+                                </div>
+
+                                <div className="appointment-patient-row">
+                                  <div className="patient-avatar-circle">
+                                    {ref.patientName
+                                      .split(' ')
+                                      .map((n) => n[0])
+                                      .join('')
+                                      .slice(0, 2)
+                                      .toUpperCase()}
+                                  </div>
+                                  <div className="patient-main-info">
+                                    <h4 className="patient-name-title">{ref.patientName}</h4>
+                                    <span className="patient-ref-id">{ref.id}</span>
+                                  </div>
+                                </div>
+
+                                <div className="appointment-scan-meta">
+                                  <div className="scan-meta-item">
+                                    <Activity size={13} color="#0D9488" />
+                                    <span className="scan-service-text">{ref.service}</span>
+                                  </div>
+                                  <div className="scan-meta-item">
+                                    <Building2 size={13} color="#64748B" />
+                                    <span className="scan-facility-text">{ref.provider}</span>
+                                  </div>
+                                </div>
+
+                                {ref.clinicalNote && (
+                                  <p className="appointment-note-snippet">
+                                    "{ref.clinicalNote}"
+                                  </p>
+                                )}
+
+                                <div className="appointment-card-actions">
+                                  <button
+                                    type="button"
+                                    className="btn-appointment-requisition"
+                                    onClick={() => setSelectedRequisitionReferral(ref)}
+                                  >
+                                    <FileText size={14} />
+                                    <span>View Requisition</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Sidebar Booking List Pagination */}
+                          <Pagination
+                            currentPage={calendarSidePage}
+                            totalPages={totalSidePages}
+                            totalItems={totalSideItems}
+                            pageSize={calendarSidePageSize}
+                            onPageChange={setCalendarSidePage}
+                            itemLabel="bookings"
+                            className="calendar-sidebar-pagination"
+                          />
+                        </>
+                      ) : (
+                        <div className="detail-empty-day-state">
+                          <div className="empty-day-icon-circle">
+                            <Calendar size={26} color="#94A3B8" />
+                          </div>
+                          <h4 className="empty-day-title">No Scans Scheduled</h4>
+                          <p className="empty-day-desc">
+                            There are no appointments on {selectedCalendarDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.
+                          </p>
+                          <button
+                            type="button"
+                            className="btn-create-referral btn-small"
+                            onClick={() => setModalStep('choose-type')}
+                          >
+                            <Plus size={14} />
+                            <span>Schedule Scan</span>
+                          </button>
+
+                          {/* Upcoming Scans Highlight */}
+                          <div className="upcoming-nearby-section">
+                            <span className="upcoming-nearby-title">Upcoming Appointments</span>
+                            <div className="upcoming-nearby-list">
+                              {referrals.slice(0, 3).map((r) => (
+                                <div
+                                  key={r.id}
+                                  className="upcoming-mini-row"
+                                  onClick={() => setSelectedCalendarDate(parseReferralDate(r))}
+                                >
+                                  <div className="mini-row-date">
+                                    <span>{r.date}</span>
+                                  </div>
+                                  <div className="mini-row-info">
+                                    <strong>{r.patientName}</strong>
+                                    <span>{r.service}</span>
+                                  </div>
+                                  <span className={`status-pill ${getStatusClass(r.status)} mini-pill`}>
+                                    {r.status}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Agenda / List View */
+                <div className="calendar-agenda-container">
+                  <div className="agenda-list-table-card">
+                    <table className="resq-table agenda-table">
+                      <thead>
+                        <tr>
+                          <th>Date & Time</th>
+                          <th>Patient Details</th>
+                          <th>Diagnostic Scan / Modality</th>
+                          <th>Diagnostic Facility</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pagedCalendarAgendaReferrals.map((ref) => (
+                          <tr key={ref.id} className="agenda-row">
+                            <td>
+                              <div className="agenda-date-cell">
+                                <span className="agenda-date-bold">{ref.date}</span>
+                                <span className="agenda-time-sub">10:00 AM</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="agenda-patient-cell">
+                                <div className="patient-avatar-small">
+                                  {ref.patientName
+                                    .split(' ')
+                                    .map((n) => n[0])
+                                    .join('')
+                                    .slice(0, 2)
+                                    .toUpperCase()}
+                                </div>
+                                <div>
+                                  <strong className="agenda-patient-name">{ref.patientName}</strong>
+                                  <span className="agenda-id-sub">{ref.id}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="agenda-service-tag">{ref.service}</span>
+                            </td>
+                            <td>
+                              <div className="agenda-facility-cell">
+                                <Building2 size={13} color="#64748B" />
+                                <span>{ref.provider}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`status-pill ${getStatusClass(ref.status)}`}>
+                                {ref.status}
+                              </span>
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                className="btn-table-action"
+                                onClick={() => setSelectedRequisitionReferral(ref)}
+                                title="View Official Requisition Document"
+                              >
+                                <FileText size={14} />
+                                <span>Requisition</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Agenda Mobile View (Cards) */}
+                  <div className="agenda-mobile-cards">
+                    {pagedCalendarAgendaReferrals.map((ref) => (
+                      <div key={ref.id} className="agenda-mobile-card">
+                        <div className="agenda-mobile-card-header">
+                          <div className="agenda-mobile-date">
+                            <Calendar size={13} color="#0D9488" />
+                            <span>{ref.date} • 10:00 AM</span>
+                          </div>
+                          <span className={`status-pill ${getStatusClass(ref.status)}`}>
+                            {ref.status}
+                          </span>
+                        </div>
+                        <div className="agenda-mobile-patient">
+                          <div className="patient-avatar-small">
+                            {ref.patientName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .slice(0, 2)
+                              .toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="agenda-patient-name">{ref.patientName}</div>
+                            <div className="agenda-id-sub">{ref.id}</div>
+                          </div>
+                        </div>
+                        <div className="agenda-mobile-meta">
+                          <div>
+                            <strong>Scan:</strong> {ref.service}
+                          </div>
+                          <div>
+                            <strong>Center:</strong> {ref.provider}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-appointment-requisition"
+                          onClick={() => setSelectedRequisitionReferral(ref)}
+                        >
+                          <FileText size={14} />
+                          <span>View Requisition</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Right-aligned Pagination */}
+                  {filteredCalendarAgendaReferrals.length > 0 && (
+                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <Pagination
+                        currentPage={calendarAgendaCurrentPage}
+                        totalItems={filteredCalendarAgendaReferrals.length}
+                        pageSize={calendarAgendaPageSize}
+                        onPageChange={setCalendarAgendaCurrentPage}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 4. PATIENTS TAB VIEW */}
+        {activeTab === 'patients' && (
+          <div className="patients-view-wrapper">
+            <div className="patients-page-layout">
+              {/* Page Header */}
+              <div className="patients-top-header">
+                <div className="patients-header-title-group">
+                  <div className="patients-header-badge">
+                    <Users size={13} />
+                    <span>Clinical Registry</span>
+                  </div>
+                  <h1 className="patients-main-title">Patients Directory</h1>
+                  <p className="patients-main-subtitle">
+                    Centralized directory of patient records, active diagnostic orders, and pending referral drafts.
+                  </p>
+                </div>
+                <div className="patients-header-actions">
+                  <button
+                    type="button"
+                    className="btn-create-referral"
+                    onClick={() => setModalStep('choose-type')}
+                  >
+                    <Plus size={16} />
+                    <span>New Referral</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Minimalist Summary KPIs */}
+              <div className="patients-summary-bar">
+                <button
+                  type="button"
+                  className={`patients-summary-stat ${patientTabFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setPatientTabFilter('all')}
+                >
+                  <span className="summary-stat-val">{referredPatientsList.length + savedDrafts.length}</span>
+                  <span className="summary-stat-label">Total Patients</span>
+                </button>
+                <div className="patients-summary-divider" />
+                <button
+                  type="button"
+                  className={`patients-summary-stat ${patientTabFilter === 'referred' ? 'active' : ''}`}
+                  onClick={() => setPatientTabFilter('referred')}
+                >
+                  <span className="summary-stat-val">{referredPatientsList.length}</span>
+                  <span className="summary-stat-label">Referred Patients</span>
+                </button>
+                <div className="patients-summary-divider" />
+                <button
+                  type="button"
+                  className={`patients-summary-stat ${patientTabFilter === 'drafts' ? 'active' : ''}`}
+                  onClick={() => setPatientTabFilter('drafts')}
+                >
+                  <span className="summary-stat-val">{savedDrafts.length}</span>
+                  <span className="summary-stat-label">Pending Drafts</span>
+                </button>
+              </div>
+
+              {/* Search & Tabs Toolbar */}
+              <div className="patients-toolbar-card">
+                <div className="patients-tabs-row">
+                  <button
+                    type="button"
+                    className={`patient-tab-btn ${patientTabFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setPatientTabFilter('all')}
+                  >
+                    All ({referredPatientsList.length + savedDrafts.length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`patient-tab-btn ${patientTabFilter === 'referred' ? 'active' : ''}`}
+                    onClick={() => setPatientTabFilter('referred')}
+                  >
+                    Referred ({referredPatientsList.length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`patient-tab-btn ${patientTabFilter === 'drafts' ? 'active' : ''}`}
+                    onClick={() => setPatientTabFilter('drafts')}
+                  >
+                    Drafts ({savedDrafts.length})
+                  </button>
+                </div>
+
+                <div className="patients-tools-row">
+                  <div className="patients-search-input-wrap">
+                    <Search size={15} color="#64748B" />
+                    <input
+                      type="text"
+                      value={patientSearchQuery}
+                      onChange={(e) => setPatientSearchQuery(e.target.value)}
+                      placeholder="Search patient, contact, scan..."
+                      className="patients-search-input"
+                    />
+                    {patientSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setPatientSearchQuery('')}
+                        className="patients-search-clear"
+                        title="Clear search"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="patients-view-toggle">
+                    <button
+                      type="button"
+                      className={`view-toggle-pill ${patientViewMode === 'table' ? 'active' : ''}`}
+                      onClick={() => setPatientViewMode('table')}
+                      title="Table View"
+                    >
+                      <List size={15} />
+                      <span>Table</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`view-toggle-pill ${patientViewMode === 'cards' ? 'active' : ''}`}
+                      onClick={() => setPatientViewMode('cards')}
+                      title="Cards View"
+                    >
+                      <Grid size={15} />
+                      <span>Cards</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Table View (Default Desktop) */}
+              {patientViewMode === 'table' ? (
+                <div className="patients-table-container">
+                  <div className="patients-table-card">
+                    <table className="resq-table patients-main-table">
+                      <thead>
+                        <tr>
+                          <th>Patient</th>
+                          <th>Contact</th>
+                          <th>Type & Status</th>
+                          <th>Scan / Indication</th>
+                          <th>Facility</th>
+                          <th>Last Activity</th>
+                          <th style={{ textAlign: 'right' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pagedPatientItems.map((item) => {
+                          if (item.kind === 'draft') {
+                            const draft = item.draft;
+                            return (
+                              <tr key={draft.id} className="patient-table-row">
+                                <td>
+                                  <div className="patient-table-cell-user">
+                                    <div className="patient-avatar-subtle">
+                                      {(draft.formData.fullName || 'UC')
+                                        .split(' ')
+                                        .map((n) => n[0])
+                                        .join('')
+                                        .slice(0, 2)
+                                        .toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <strong className="table-patient-name">
+                                        {draft.formData.fullName || 'Unnamed Client'}
+                                      </strong>
+                                      <span className="table-sub-info">
+                                        {draft.formData.gender || 'Not specified'} • {draft.formData.dob || 'DOB on file'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div className="table-contact-cell">
+                                    <span>{draft.formData.email || '—'}</span>
+                                    <span className="table-sub-info">{draft.formData.phone || '—'}</span>
+                                  </div>
+                                </td>
+                                <td>
+                                  <span className="patient-status-pill pill-draft">
+                                    Draft • {draft.step === 'patient-info' ? 'Step 1/4' : 'Step 2/4'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div className="table-scan-cell">
+                                    <span className="table-service-name">
+                                      {draft.formData.scanType || 'Diagnostic Scan'}
+                                      {draft.formData.bodyPart ? ` (${draft.formData.bodyPart})` : ''}
+                                    </span>
+                                    {draft.formData.clinicalNote && (
+                                      <span className="table-note-preview" title={draft.formData.clinicalNote}>
+                                        {draft.formData.clinicalNote}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td>
+                                  <span className="table-facility-muted">Pending selection</span>
+                                </td>
+                                <td>
+                                  <span className="table-date-text">{draft.savedAtDisplay || 'Recent'}</span>
+                                </td>
+                                <td>
+                                  <div className="table-actions-cell" style={{ justifyContent: 'flex-end' }}>
+                                    <button
+                                      type="button"
+                                      className="btn-table-action btn-resume"
+                                      onClick={() => handleResumeDraft(draft)}
+                                      title="Resume Referral"
+                                    >
+                                      <ArrowRight size={13} />
+                                      <span>Resume</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn-table-action-icon"
+                                      onClick={(e) => handleDeleteDraft(draft.id, e)}
+                                      title="Delete Draft"
+                                    >
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          const patient = item.patient;
+                          const latest = patient.latestReferral;
+                          return (
+                            <tr key={patient.patientName} className="patient-table-row">
+                              <td>
+                                <div className="patient-table-cell-user">
+                                  <div className="patient-avatar-subtle">
+                                    {patient.patientName
+                                      .split(' ')
+                                      .map((n) => n[0])
+                                      .join('')
+                                      .slice(0, 2)
+                                      .toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <strong className="table-patient-name">{patient.patientName}</strong>
+                                    <span className="table-sub-info">
+                                      {patient.gender || 'Patient'} • {patient.dob || 'DOB on file'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <div className="table-contact-cell">
+                                  <span>{patient.email || '—'}</span>
+                                  <span className="table-sub-info">{patient.phone || '—'}</span>
+                                </div>
+                              </td>
+                              <td>
+                                {latest && (
+                                  <span className={`status-pill ${getStatusClass(latest.status)}`}>
+                                    {latest.status}
+                                  </span>
+                                )}
+                              </td>
+                              <td>
+                                <div className="table-scan-cell">
+                                  <span className="table-service-name">{latest?.service || 'Consultation'}</span>
+                                  {latest?.clinicalNote && (
+                                    <span className="table-note-preview" title={latest.clinicalNote}>
+                                      {latest.clinicalNote}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td>
+                                <span className="table-facility-name">{latest?.provider || 'Network Facility'}</span>
+                              </td>
+                              <td>
+                                <span className="table-date-text">{latest?.date || 'Recent'}</span>
+                              </td>
+                              <td>
+                                <div className="table-actions-cell" style={{ justifyContent: 'flex-end' }}>
+                                  {latest && (
+                                    <button
+                                      type="button"
+                                      className="btn-table-action"
+                                      onClick={() => setSelectedRequisitionReferral(latest)}
+                                      title="View Requisition Document"
+                                    >
+                                      <FileText size={13} />
+                                      <span>Requisition</span>
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    className="btn-table-action btn-refer-again"
+                                    onClick={() =>
+                                      handleNewReferralForPatient({
+                                        name: patient.patientName,
+                                        email: patient.email,
+                                        phone: patient.phone,
+                                        gender: patient.gender,
+                                        dob: patient.dob,
+                                        address: patient.address,
+                                      })
+                                    }
+                                    title="New Referral for Patient"
+                                  >
+                                    <Plus size={13} />
+                                    <span>Refer</span>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Right-aligned Pagination for Table View */}
+                  {allVisiblePatientItems.length > 0 && (
+                    <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <Pagination
+                        currentPage={patientCurrentPage}
+                        totalItems={allVisiblePatientItems.length}
+                        pageSize={patientPageSize}
+                        onPageChange={setPatientCurrentPage}
+                      />
+                    </div>
+                  )}
+
+                  {/* Empty state for table */}
+                  {allVisiblePatientItems.length === 0 && (
+                    <div className="patients-global-empty-state">
+                      <Users size={36} color="#94A3B8" />
+                      <h3>No records match your criteria</h3>
+                      <p>Try searching for another name or reset your filter.</p>
+                      <button
+                        type="button"
+                        className="btn-create-referral btn-small"
+                        onClick={() => {
+                          setPatientSearchQuery('');
+                          setPatientTabFilter('all');
+                        }}
+                      >
+                        Reset Filters
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Cards View */
+                <div className="patients-cards-layout">
+                  {pagedPatientItems.length > 0 && (
+                    <div className="patients-card-group">
+                      <div className="patients-grid-cards">
+                        {pagedPatientItems.map((item) => {
+                          if (item.kind === 'draft') {
+                            const draft = item.draft;
+                            const stepName =
+                              draft.step === 'patient-info' ? 'Step 1 of 4' : 'Step 2 of 4';
+                            const stepPercent = draft.step === 'patient-info' ? '25%' : '50%';
+                            const clientName = draft.formData.fullName || 'Unnamed Client';
+                            const scanType = draft.formData.scanType || 'Diagnostic Scan (Unspecified)';
+                            const bodyPart = draft.formData.bodyPart || '';
+
+                            return (
+                              <div key={draft.id} className="patient-card-box">
+                                <div className="patient-card-top">
+                                  <div className="patient-card-identity">
+                                    <div className="patient-avatar-subtle">
+                                      {clientName
+                                        .split(' ')
+                                        .map((n) => n[0])
+                                        .join('')
+                                        .slice(0, 2)
+                                        .toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <h4 className="patient-card-name">{clientName}</h4>
+                                      <span className="patient-card-sub">
+                                        {draft.formData.gender || 'Not specified'} • {draft.formData.dob || 'DOB on file'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <span className="patient-status-pill pill-draft">
+                                    Draft
+                                  </span>
+                                </div>
+
+                                <div className="patient-card-details">
+                                  <div className="patient-detail-row">
+                                    <Activity size={14} color="#0D9488" />
+                                    <span className="font-medium text-slate-800">
+                                      {scanType}{bodyPart ? ` • ${bodyPart}` : ''}
+                                    </span>
+                                  </div>
+                                  {(draft.formData.email || draft.formData.phone) && (
+                                    <div className="patient-detail-row text-muted">
+                                      <Mail size={13} />
+                                      <span>{draft.formData.email || draft.formData.phone}</span>
+                                    </div>
+                                  )}
+                                  <div className="draft-progress-strip">
+                                    <div className="draft-progress-meta">
+                                      <span>{stepName}</span>
+                                      <span>{stepPercent} complete</span>
+                                    </div>
+                                    <div className="draft-progress-bar-bg">
+                                      <div className="draft-progress-bar-val" style={{ width: stepPercent }} />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="patient-card-footer">
+                                  <button
+                                    type="button"
+                                    className="btn-resume-draft-primary"
+                                    onClick={() => handleResumeDraft(draft)}
+                                  >
+                                    <span>Resume Referral</span>
+                                    <ArrowRight size={14} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn-delete-draft-icon"
+                                    onClick={(e) => handleDeleteDraft(draft.id, e)}
+                                    title="Discard this draft"
+                                  >
+                                    <Trash2 size={15} />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          const patient = item.patient;
+                          const initials = patient.patientName
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase();
+                          const latest = patient.latestReferral;
+
+                          return (
+                            <div key={patient.patientName} className="patient-card-box">
+                              <div className="patient-card-top">
+                                <div className="patient-card-identity">
+                                  <div className="patient-avatar-subtle">
+                                    {initials}
+                                  </div>
+                                  <div>
+                                    <h4 className="patient-card-name">{patient.patientName}</h4>
+                                    <span className="patient-card-sub">
+                                      {patient.gender !== 'Not specified' ? patient.gender : 'Patient'} • {patient.dob !== 'Not specified' ? patient.dob : 'DOB on file'}
+                                    </span>
+                                  </div>
+                                </div>
+                                {latest && (
+                                  <span className={`status-pill ${getStatusClass(latest.status)}`}>
+                                    {latest.status}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="patient-card-details">
+                                <div className="patient-detail-row">
+                                  <Activity size={14} color="#0D9488" />
+                                  <span className="font-medium text-slate-800">{latest?.service || 'Consultation'}</span>
+                                </div>
+                                <div className="patient-detail-row text-muted">
+                                  <Building2 size={13} />
+                                  <span>{latest?.provider || 'Diagnostic Facility'}</span>
+                                </div>
+                                <div className="patient-detail-row text-muted">
+                                  <Clock size={13} />
+                                  <span>{latest?.date || 'Recent'}</span>
+                                </div>
+                              </div>
+
+                              <div className="patient-card-footer">
+                                {latest && (
+                                  <button
+                                    type="button"
+                                    className="btn-patient-view-requisition"
+                                    onClick={() => setSelectedRequisitionReferral(latest)}
+                                  >
+                                    <FileText size={14} />
+                                    <span>Requisition</span>
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="btn-patient-new-referral"
+                                  onClick={() =>
+                                    handleNewReferralForPatient({
+                                      name: patient.patientName,
+                                      email: patient.email,
+                                      phone: patient.phone,
+                                      gender: patient.gender,
+                                      dob: patient.dob,
+                                      address: patient.address,
+                                    })
+                                  }
+                                >
+                                  <Plus size={14} />
+                                  <span>Refer Again</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Right-aligned Pagination for Cards View */}
+                      {allVisiblePatientItems.length > 0 && (
+                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                          <Pagination
+                            currentPage={patientCurrentPage}
+                            totalItems={allVisiblePatientItems.length}
+                            pageSize={patientPageSize}
+                            onPageChange={setPatientCurrentPage}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Empty state for cards */}
+                  {allVisiblePatientItems.length === 0 && (
+                    <div className="patients-global-empty-state">
+                      <Users size={36} color="#94A3B8" />
+                      <h3>No records match your criteria</h3>
+                      <p>Try searching for another name or reset your filter.</p>
+                      <button
+                        type="button"
+                        className="btn-create-referral btn-small"
+                        onClick={() => {
+                          setPatientSearchQuery('');
+                          setPatientTabFilter('all');
+                        }}
+                      >
+                        Reset Filters
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 5. PAYMENTS TAB VIEW */}
+        {activeTab === 'payments' && (
+          <PaymentsView
+            user={user}
+            onAddToast={onAddToast}
+            onOpenNewReferral={() => {
+              setActiveTab('referrals');
+              setModalStep('choose-type');
+            }}
+          />
+        )}
+
+        {/* 6. REPORTS TAB VIEW */}
+        {activeTab === 'reports' && (
+          <ReportsView
+            user={user}
+            onAddToast={onAddToast}
+          />
+        )}
+
         {/* OTHER TABS FALLBACK */}
-        {activeTab !== 'overview' && activeTab !== 'referrals' && (
+        {activeTab !== 'overview' && activeTab !== 'referrals' && activeTab !== 'calendar' && activeTab !== 'patients' && activeTab !== 'payments' && activeTab !== 'reports' && (
           <div className="clinician-body">
             <div className="empty-referral-state">
               <h2 className="empty-state-heading" style={{ textTransform: 'capitalize' }}>
@@ -2534,23 +4326,23 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             role="dialog"
             aria-modal="true"
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#06202E' }}>
-                  Create Referral
-                </h3>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#586A73' }}>
-                  Choose how you would like to begin or continue your referral.
-                </p>
+            <div className="resq-modal-header-redesigned referral-type-modal-header">
+              <div className="referral-type-header-row">
+                <div className="modal-header-headline-block">
+                  <h3 className="modal-headline-title">Create Referral</h3>
+                  <p className="modal-headline-subtitle">
+                    Choose how you would like to begin or continue your referral.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="modal-close-pink-btn"
+                  onClick={closeModal}
+                  title="Close"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                className="modal-close-pink-btn"
-                onClick={closeModal}
-                title="Close"
-              >
-                <X size={18} />
-              </button>
             </div>
 
             {/* Single Sleek, Non-Clumsy Saved Drafts Bar */}
@@ -2616,6 +4408,17 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 <p className="type-desc">
                   Select this option to input details for a new patient and set up their first appointment.
                 </p>
+              </button>
+            </div>
+
+            {/* Mobile-Friendly Dismissal Bar */}
+            <div className="referral-modal-mobile-bottom-actions">
+              <button
+                type="button"
+                className="btn-referral-cancel-mobile"
+                onClick={closeModal}
+              >
+                <span>Dismiss</span>
               </button>
             </div>
           </div>
@@ -3191,9 +4994,16 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                               <input
                                 type="text"
                                 value={formData.fullName}
-                                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                className="resq-input-boxed"
-                                style={{ backgroundColor: '#FFFFFF' }}
+                                readOnly={isFieldAutoPopulated('fullName')}
+                                disabled={isFieldAutoPopulated('fullName')}
+                                tabIndex={isFieldAutoPopulated('fullName') ? -1 : undefined}
+                                onChange={(e) => {
+                                  if (!isFieldAutoPopulated('fullName')) {
+                                    setFormData({ ...formData, fullName: e.target.value });
+                                  }
+                                }}
+                                className={`resq-input-boxed ${isFieldAutoPopulated('fullName') ? 'resq-field-immutable' : ''}`}
+                                style={isFieldAutoPopulated('fullName') ? undefined : { backgroundColor: '#FFFFFF' }}
                                 required
                               />
                             </div>
@@ -3204,12 +5014,18 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                                 <label className="resq-form-label" style={{ fontSize: '12px', fontWeight: 500 }}>
                                   Gender
                                 </label>
-                                <div className="resq-input-wrapper">
+                                <div className={`resq-input-wrapper ${isFieldAutoPopulated('gender') ? 'is-immutable' : ''}`}>
                                   <select
                                     value={formData.gender}
-                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                    className="resq-select-boxed"
-                                    style={{ backgroundColor: '#FFFFFF' }}
+                                    disabled={isFieldAutoPopulated('gender')}
+                                    tabIndex={isFieldAutoPopulated('gender') ? -1 : undefined}
+                                    onChange={(e) => {
+                                      if (!isFieldAutoPopulated('gender')) {
+                                        setFormData({ ...formData, gender: e.target.value });
+                                      }
+                                    }}
+                                    className={`resq-select-boxed ${isFieldAutoPopulated('gender') ? 'resq-field-immutable' : ''}`}
+                                    style={isFieldAutoPopulated('gender') ? undefined : { backgroundColor: '#FFFFFF' }}
                                   >
                                     <option value="">Select Gender</option>
                                     <option value="Male">Male</option>
@@ -3224,13 +5040,20 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                                 <label className="resq-form-label" style={{ fontSize: '12px', fontWeight: 500 }}>
                                   Date of Birth
                                 </label>
-                                <div className="resq-input-wrapper">
+                                <div className={`resq-input-wrapper ${isFieldAutoPopulated('dob') ? 'is-immutable' : ''}`}>
                                   <input
                                     type="text"
                                     value={formData.dob}
-                                    onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                                    className="resq-input-boxed"
-                                    style={{ backgroundColor: '#FFFFFF' }}
+                                    readOnly={isFieldAutoPopulated('dob')}
+                                    disabled={isFieldAutoPopulated('dob')}
+                                    tabIndex={isFieldAutoPopulated('dob') ? -1 : undefined}
+                                    onChange={(e) => {
+                                      if (!isFieldAutoPopulated('dob')) {
+                                        setFormData({ ...formData, dob: e.target.value });
+                                      }
+                                    }}
+                                    className={`resq-input-boxed ${isFieldAutoPopulated('dob') ? 'resq-field-immutable' : ''}`}
+                                    style={isFieldAutoPopulated('dob') ? undefined : { backgroundColor: '#FFFFFF' }}
                                   />
                                   <Calendar size={16} className="resq-date-icon" />
                                 </div>
@@ -3246,9 +5069,16 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                                 <input
                                   type="email"
                                   value={formData.email}
-                                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                  className="resq-input-boxed"
-                                  style={{ backgroundColor: '#FFFFFF' }}
+                                  readOnly={isFieldAutoPopulated('email')}
+                                  disabled={isFieldAutoPopulated('email')}
+                                  tabIndex={isFieldAutoPopulated('email') ? -1 : undefined}
+                                  onChange={(e) => {
+                                    if (!isFieldAutoPopulated('email')) {
+                                      setFormData({ ...formData, email: e.target.value });
+                                    }
+                                  }}
+                                  className={`resq-input-boxed ${isFieldAutoPopulated('email') ? 'resq-field-immutable' : ''}`}
+                                  style={isFieldAutoPopulated('email') ? undefined : { backgroundColor: '#FFFFFF' }}
                                 />
                               </div>
 
@@ -3259,9 +5089,16 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                                 <input
                                   type="tel"
                                   value={formData.phone}
-                                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                  className="resq-input-boxed"
-                                  style={{ backgroundColor: '#FFFFFF' }}
+                                  readOnly={isFieldAutoPopulated('phone')}
+                                  disabled={isFieldAutoPopulated('phone')}
+                                  tabIndex={isFieldAutoPopulated('phone') ? -1 : undefined}
+                                  onChange={(e) => {
+                                    if (!isFieldAutoPopulated('phone')) {
+                                      setFormData({ ...formData, phone: e.target.value });
+                                    }
+                                  }}
+                                  className={`resq-input-boxed ${isFieldAutoPopulated('phone') ? 'resq-field-immutable' : ''}`}
+                                  style={isFieldAutoPopulated('phone') ? undefined : { backgroundColor: '#FFFFFF' }}
                                 />
                               </div>
                             </div>
@@ -3275,11 +5112,21 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                                 <textarea
                                   maxLength={240}
                                   value={formData.address}
-                                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                  className="new-user-textarea"
-                                  style={{ backgroundColor: '#FFFFFF' }}
+                                  readOnly={isFieldAutoPopulated('address')}
+                                  disabled={isFieldAutoPopulated('address')}
+                                  tabIndex={isFieldAutoPopulated('address') ? -1 : undefined}
+                                  onChange={(e) => {
+                                    if (!isFieldAutoPopulated('address')) {
+                                      setFormData({ ...formData, address: e.target.value });
+                                    }
+                                  }}
+                                  className={`new-user-textarea ${isFieldAutoPopulated('address') ? 'resq-field-immutable' : ''}`}
+                                  style={{
+                                    ...(isFieldAutoPopulated('address') ? {} : { backgroundColor: '#FFFFFF' }),
+                                    resize: isFieldAutoPopulated('address') ? 'none' : 'vertical',
+                                  }}
                                 />
-                                <span className="new-user-char-count">
+                                <span className="new-user-char-count" style={isFieldAutoPopulated('address') ? { color: '#94A3B8' } : undefined}>
                                   {formData.address.length}/240
                                 </span>
                               </div>
@@ -3492,8 +5339,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                       required
                       placeholder="Anthony Odafe"
                       value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      className="resq-input-boxed"
+                      readOnly={isFieldAutoPopulated('fullName')}
+                      disabled={isFieldAutoPopulated('fullName')}
+                      tabIndex={isFieldAutoPopulated('fullName') ? -1 : undefined}
+                      onChange={(e) => {
+                        if (!isFieldAutoPopulated('fullName')) {
+                          setFormData({ ...formData, fullName: e.target.value });
+                        }
+                      }}
+                      className={`resq-input-boxed ${isFieldAutoPopulated('fullName') ? 'resq-field-immutable' : ''}`}
                     />
                   </div>
 
@@ -3501,11 +5355,17 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                   <div className="resq-form-row-2col">
                     <div className="resq-form-group" style={{ marginBottom: 0 }}>
                       <label className="resq-form-label">Gender</label>
-                      <div className="resq-input-wrapper">
+                      <div className={`resq-input-wrapper ${isFieldAutoPopulated('gender') ? 'is-immutable' : ''}`}>
                         <select
                           value={formData.gender}
-                          onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                          className="resq-select-boxed"
+                          disabled={isFieldAutoPopulated('gender')}
+                          tabIndex={isFieldAutoPopulated('gender') ? -1 : undefined}
+                          onChange={(e) => {
+                            if (!isFieldAutoPopulated('gender')) {
+                              setFormData({ ...formData, gender: e.target.value });
+                            }
+                          }}
+                          className={`resq-select-boxed ${isFieldAutoPopulated('gender') ? 'resq-field-immutable' : ''}`}
                         >
                           <option value="Male">Male</option>
                           <option value="Female">Female</option>
@@ -3517,13 +5377,20 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
 
                     <div className="resq-form-group" style={{ marginBottom: 0 }}>
                       <label className="resq-form-label">Date of Birth</label>
-                      <div className="resq-input-wrapper">
+                      <div className={`resq-input-wrapper ${isFieldAutoPopulated('dob') ? 'is-immutable' : ''}`}>
                         <input
                           type="text"
                           placeholder="10/01/1980"
                           value={formData.dob}
-                          onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                          className="resq-input-boxed"
+                          readOnly={isFieldAutoPopulated('dob')}
+                          disabled={isFieldAutoPopulated('dob')}
+                          tabIndex={isFieldAutoPopulated('dob') ? -1 : undefined}
+                          onChange={(e) => {
+                            if (!isFieldAutoPopulated('dob')) {
+                              setFormData({ ...formData, dob: e.target.value });
+                            }
+                          }}
+                          className={`resq-input-boxed ${isFieldAutoPopulated('dob') ? 'resq-field-immutable' : ''}`}
                         />
                         <Calendar size={18} className="resq-date-icon" />
                       </div>
@@ -3538,8 +5405,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                         type="email"
                         placeholder="yourname@mail.com"
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="resq-input-boxed"
+                        readOnly={isFieldAutoPopulated('email')}
+                        disabled={isFieldAutoPopulated('email')}
+                        tabIndex={isFieldAutoPopulated('email') ? -1 : undefined}
+                        onChange={(e) => {
+                          if (!isFieldAutoPopulated('email')) {
+                            setFormData({ ...formData, email: e.target.value });
+                          }
+                        }}
+                        className={`resq-input-boxed ${isFieldAutoPopulated('email') ? 'resq-field-immutable' : ''}`}
                       />
                     </div>
 
@@ -3549,8 +5423,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                         type="tel"
                         placeholder="0801 234 5678"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="resq-input-boxed"
+                        readOnly={isFieldAutoPopulated('phone')}
+                        disabled={isFieldAutoPopulated('phone')}
+                        tabIndex={isFieldAutoPopulated('phone') ? -1 : undefined}
+                        onChange={(e) => {
+                          if (!isFieldAutoPopulated('phone')) {
+                            setFormData({ ...formData, phone: e.target.value });
+                          }
+                        }}
+                        className={`resq-input-boxed ${isFieldAutoPopulated('phone') ? 'resq-field-immutable' : ''}`}
                       />
                     </div>
                   </div>
@@ -3562,8 +5443,15 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                       type="text"
                       placeholder="Letmauck Cantoment, Mokola, Ibadan"
                       value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      className="resq-input-boxed"
+                      readOnly={isFieldAutoPopulated('address')}
+                      disabled={isFieldAutoPopulated('address')}
+                      tabIndex={isFieldAutoPopulated('address') ? -1 : undefined}
+                      onChange={(e) => {
+                        if (!isFieldAutoPopulated('address')) {
+                          setFormData({ ...formData, address: e.target.value });
+                        }
+                      }}
+                      className={`resq-input-boxed ${isFieldAutoPopulated('address') ? 'resq-field-immutable' : ''}`}
                     />
                   </div>
 
@@ -4157,12 +6045,13 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             role="dialog"
             aria-modal="true"
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '19px', fontWeight: 700, color: '#06202E' }}>
+            <div className="edit-profile-modal-header">
+              <div className="edit-profile-header-text">
+                <span className="edit-profile-pill-badge">Clinician Account</span>
+                <h3 className="edit-profile-title">
                   Clinician Profile
                 </h3>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#586A73' }}>
+                <p className="edit-profile-desc">
                   View and update your practice information and professional credentials.
                 </p>
               </div>
@@ -4320,6 +6209,134 @@ export const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
             </form>
           </div>
         </div>
+      )}
+      {/* ======================================================================
+          MODAL: CONFIRM SIGN OUT
+          ====================================================================== */}
+      {isSignOutModalOpen && (
+        <div
+          className="modal-backdrop signout-modal-backdrop"
+          onClick={() => setIsSignOutModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="modal-card-resq signout-confirm-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="signout-modal-title"
+          >
+            <div className="signout-modal-header">
+              <div className="signout-modal-icon-badge">
+                <LogOut size={22} />
+              </div>
+              <button
+                type="button"
+                className="modal-close-pink-btn"
+                onClick={() => setIsSignOutModalOpen(false)}
+                title="Cancel and close"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="signout-modal-body">
+              <h3 id="signout-modal-title" className="signout-modal-title">
+                Sign Out of ResQ?
+              </h3>
+              <p className="signout-modal-desc">
+                Are you sure you want to end your session? You will need to sign in again to access your clinician dashboard and manage patient referrals.
+              </p>
+            </div>
+
+            <div className="signout-modal-actions">
+              <button
+                type="button"
+                className="btn-signout-cancel"
+                onClick={() => setIsSignOutModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-signout-confirm"
+                onClick={() => {
+                  setIsSignOutModalOpen(false);
+                  onSignOut();
+                }}
+              >
+                <LogOut size={16} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reusable Requisition Document Modal for Any Referral */}
+      {selectedRequisitionReferral && (
+        <RequisitionDocumentModal
+          isOpen={Boolean(selectedRequisitionReferral)}
+          onClose={() => setSelectedRequisitionReferral(null)}
+          patientData={{
+            fullName: selectedRequisitionReferral.patientName,
+            email:
+              selectedRequisitionReferral.draft?.formData.email ||
+              existingPatients.find(
+                (p) => p.name.toLowerCase() === selectedRequisitionReferral.patientName.toLowerCase()
+              )?.email ||
+              'patient@healthmail.com',
+            phone:
+              selectedRequisitionReferral.draft?.formData.phone ||
+              existingPatients.find(
+                (p) => p.name.toLowerCase() === selectedRequisitionReferral.patientName.toLowerCase()
+              )?.phone ||
+              '+234 800 123 4567',
+            gender:
+              selectedRequisitionReferral.draft?.formData.gender ||
+              existingPatients.find(
+                (p) => p.name.toLowerCase() === selectedRequisitionReferral.patientName.toLowerCase()
+              )?.gender ||
+              'Not specified',
+            dob:
+              selectedRequisitionReferral.draft?.formData.dob ||
+              existingPatients.find(
+                (p) => p.name.toLowerCase() === selectedRequisitionReferral.patientName.toLowerCase()
+              )?.dob ||
+              'Not specified',
+            address:
+              selectedRequisitionReferral.draft?.formData.address ||
+              existingPatients.find(
+                (p) => p.name.toLowerCase() === selectedRequisitionReferral.patientName.toLowerCase()
+              )?.address ||
+              'Lagos, Nigeria',
+          }}
+          referralData={{
+            scanType:
+              selectedRequisitionReferral.specialty ||
+              selectedRequisitionReferral.service.split('-')[0].trim() ||
+              'Diagnostic Imaging',
+            bodyPart:
+              selectedRequisitionReferral.bodyPart ||
+              selectedRequisitionReferral.service.split('-')[1]?.trim() ||
+              'General',
+            clinicalNote:
+              selectedRequisitionReferral.clinicalNote ||
+              'Standard diagnostic imaging evaluation and clinical requisition order.',
+            preferredCenter:
+              selectedRequisitionReferral.provider ||
+              selectedRequisitionReferral.hospital ||
+              'ResQ Diagnostic Facility',
+          }}
+          clinicianData={{
+            name: user.fullname,
+            specialty: user.specialty,
+            facility: user.practiceName,
+            email: user.email,
+            phone: user.phoneNumber,
+          }}
+        />
       )}
     </div>
   );
